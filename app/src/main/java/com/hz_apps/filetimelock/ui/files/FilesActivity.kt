@@ -19,7 +19,7 @@ class FilesActivity : AppCompatActivity() {
         bindings.floatingBtnFilesActivity.setOnClickListener {
             // check storage permission
             val value = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (value != 0) {
+            if (value == 0) {
                 val storagePermission = CustomPermission(
                     "Storage Permission",
                     "This permission is required to access the storage of your device",

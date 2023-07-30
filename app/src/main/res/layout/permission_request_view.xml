@@ -42,8 +42,7 @@
         <TextView
             android:id="@+id/permission_desc_textView"
             android:layout_width="0dp"
-            android:layout_height="38dp"
-            android:layout_marginTop="5dp"
+            android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
             android:text="This permission is needed for this purpose. Or else app will not work properly"
             android:textAlignment="viewStart"

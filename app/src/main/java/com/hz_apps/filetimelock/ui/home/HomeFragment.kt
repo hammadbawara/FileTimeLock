@@ -3,10 +3,10 @@ package com.hz_apps.filetimelock.ui.home
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.adapters.ImageAndNameAdapter
 import com.hz_apps.filetimelock.adapters.OnImageAndTextClickListener
