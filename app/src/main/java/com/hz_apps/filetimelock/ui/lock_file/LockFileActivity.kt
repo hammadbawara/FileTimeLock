@@ -28,7 +28,9 @@ class LockFileActivity : AppCompatActivity() {
                     intent!!.getSerializableExtra("result") as File
                 }
 
-                bindings.filenameLockFile.text = lockFile.name
+                val fileView = bindings.fileViewLockFile
+
+                fileView.nameFileView.text = lockFile.name
 
             }else{
                 finish()

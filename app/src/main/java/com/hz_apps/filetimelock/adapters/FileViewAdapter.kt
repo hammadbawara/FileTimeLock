@@ -125,7 +125,7 @@ class FileViewAdapter(
         }
     }
 
-    fun setFileIcon(holder: ViewHolder, currentFile: File) {
+    private fun setFileIcon(holder: ViewHolder, currentFile: File) {
         val resource = getFileTypeIcon(currentFile, holder)
         if (resource == 0)
             return
