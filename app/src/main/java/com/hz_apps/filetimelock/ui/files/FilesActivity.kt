@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.models.CustomPermission
-import com.hz_apps.filetimelock.ui.add_files.AddFileActivity
+import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 
 class FilesActivity : AppCompatActivity() {
@@ -35,7 +35,7 @@ class FilesActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             else {
-                val intent = Intent(this, AddFileActivity::class.java)
+                val intent = Intent(this, FilePickerActivity::class.java)
                 startActivity(intent)
             }
         }

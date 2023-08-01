@@ -1,5 +1,6 @@
 package com.hz_apps.filetimelock.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,15 +9,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hz_apps.filetimelock.R
+import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
 import java.io.File
 
 class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
 
-    private lateinit var files : Array<File>
-    private lateinit var file : File
-    constructor(file : File) : this() {
-        this.file = file
-        this.files = file.listFiles()!!
+    private lateinit var files : MutableList<File>
+    private lateinit var viewModel : FilePickerViewModel
+    constructor(viewModel : FilePickerViewModel) : this() {
+        this.viewModel = viewModel
+        this.files = listFilteredFiles(viewModel.file)
     }
 
 
@@ -44,28 +46,33 @@ class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
 
         holder.itemView.setOnClickListener {
             if (files[position].isDirectory) {
-                this.file = files[position]
+                viewModel.file = files[position]
                 updateFiles()
             }
         }
 
     }
 
+    private fun listFilteredFiles(file: File): MutableList<File> {
+        val filteredFiles = mutableListOf<File>()
+        for (currentFile in file.listFiles()!!) {
+            if (!currentFile.name.startsWith(".")) filteredFiles.add(currentFile)
+        }
+        return filteredFiles
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     fun updateFiles() {
-        this.files = file.listFiles()!!
+        this.files = listFilteredFiles(viewModel.file)
         notifyDataSetChanged()
     }
 
     fun getCurrentPath() : String? {
-        return file.path
-    }
-
-    fun setFile(file : File) {
-        this.file = file
+        return viewModel.file.path
     }
 
     fun onBackPressed() {
-        this.file = file.parentFile!!
+        this.viewModel.file = viewModel.file.parentFile!!
         updateFiles()
     }
 

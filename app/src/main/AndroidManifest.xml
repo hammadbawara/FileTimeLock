@@ -20,7 +20,7 @@
             android:name=".ui.permissions.PermissionsActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.add_files.AddFileActivity"
+            android:name=".ui.file_picker.FilePickerActivity"
             android:exported="false"
             android:label="@string/title_activity_add_files"
             android:theme="@style/Theme.FileTimeLock" />
