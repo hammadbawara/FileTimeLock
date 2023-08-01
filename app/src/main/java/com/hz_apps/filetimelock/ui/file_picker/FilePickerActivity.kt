@@ -5,7 +5,7 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.hz_apps.filetimelock.adapters.FileViewAdapter
-import com.hz_apps.filetimelock.databinding.ActivityAddFileBinding
+import com.hz_apps.filetimelock.databinding.ActivityFilePickerBinding
 
 class FilePickerActivity : AppCompatActivity() {
 
@@ -14,7 +14,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bindings = ActivityAddFileBinding.inflate(layoutInflater)
+        val bindings = ActivityFilePickerBinding.inflate(layoutInflater)
         setContentView(bindings.root)
         setSupportActionBar(bindings.toolbarFilePicker)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -37,6 +37,8 @@ class FilePickerActivity : AppCompatActivity() {
 
 
         adapter = FileViewAdapter(this, viewModel )
+
+
 
         bindings.recyclerFileView.adapter = adapter
 
