@@ -22,7 +22,7 @@ class FilePickerActivity : AppCompatActivity() {
         }
 
         bindings.cancelFilePicker.setOnClickListener {
-            onBackPressed()
+            super.onBackPressed()
         }
 
 
