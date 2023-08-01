@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.io.File
 
-class FilePickerViewModel (
+class FilePickerViewModel(
 ) : ViewModel(), ViewModelProvider.Factory {
     val path = "/storage/emulated/0"
     var file = File(path)

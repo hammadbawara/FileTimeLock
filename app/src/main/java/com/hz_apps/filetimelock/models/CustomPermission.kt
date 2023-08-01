@@ -4,8 +4,8 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class CustomPermission (
-    val name : String,
+class CustomPermission(
+    val name: String,
     val description: String,
     val icon: Int,
     val permission: String

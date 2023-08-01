@@ -11,7 +11,7 @@ import com.hz_apps.filetimelock.models.ItemWithImageAndName
 
 class ImageAndNameAdapter(
     private val items: List<ItemWithImageAndName>,
-    private val clickListener : OnImageAndTextClickListener? = null
+    private val clickListener: OnImageAndTextClickListener? = null
 ) : RecyclerView.Adapter<ImageAndNameAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -19,7 +19,10 @@ class PermissionsActivity : AppCompatActivity() {
 
 
         val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra("permission", CustomPermission::class.java) as ArrayList<CustomPermission>
+            intent.getParcelableArrayListExtra(
+                "permission",
+                CustomPermission::class.java
+            ) as ArrayList<CustomPermission>
         } else {
             intent.getParcelableArrayListExtra<CustomPermission>("permission") as ArrayList<CustomPermission>
         }

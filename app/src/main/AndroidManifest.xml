@@ -17,6 +17,9 @@
         android:theme="@style/Theme.FileTimeLock"
         tools:targetApi="31">
         <activity
+            android:name=".ui.lock_file.LockFileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.permissions.PermissionsActivity"
             android:exported="false" />
         <activity

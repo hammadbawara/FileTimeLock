@@ -8,14 +8,22 @@ import com.hz_apps.filetimelock.databinding.ActivityAddFileBinding
 
 class FilePickerActivity : AppCompatActivity() {
 
-    private lateinit var adapter : FileViewAdapter
-    private val viewModel : FilePickerViewModel by viewModels()
+    private lateinit var adapter: FileViewAdapter
+    private val viewModel: FilePickerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bindings = ActivityAddFileBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+        setSupportActionBar(bindings.toolbarFilePicker)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        bindings.toolbarFilePicker.setNavigationOnClickListener {
+            onBackPressed()
+        }
 
+        bindings.cancelFilePicker.setOnClickListener {
+            onBackPressed()
+        }
 
 
         // ask user for storage permission

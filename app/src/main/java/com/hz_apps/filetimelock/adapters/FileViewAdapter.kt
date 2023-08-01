@@ -14,9 +14,10 @@ import java.io.File
 
 class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
 
-    private lateinit var files : MutableList<File>
-    private lateinit var viewModel : FilePickerViewModel
-    constructor(viewModel : FilePickerViewModel) : this() {
+    private lateinit var files: MutableList<File>
+    private lateinit var viewModel: FilePickerViewModel
+
+    constructor(viewModel: FilePickerViewModel) : this() {
         this.viewModel = viewModel
         this.files = listFilteredFiles(viewModel.file)
     }
@@ -67,7 +68,7 @@ class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
         notifyDataSetChanged()
     }
 
-    fun getCurrentPath() : String? {
+    fun getCurrentPath(): String? {
         return viewModel.file.path
     }
 
@@ -76,8 +77,8 @@ class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
         updateFiles()
     }
 
-    class ViewHolder (itemView : View) : RecyclerView.ViewHolder(itemView) {
-        val fileName : TextView = itemView.findViewById(R.id.name_file_view)
-        val fileIcon : ImageView= itemView.findViewById(R.id.icon_file_view)
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val fileName: TextView = itemView.findViewById(R.id.name_file_view)
+        val fileIcon: ImageView = itemView.findViewById(R.id.icon_file_view)
     }
 }

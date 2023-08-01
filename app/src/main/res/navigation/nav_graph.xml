@@ -9,5 +9,5 @@
         android:id="@+id/HomeFragment"
         android:name="com.hz_apps.filetimelock.ui.home.HomeFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_home"/>
+        tools:layout="@layout/fragment_home" />
 </navigation>

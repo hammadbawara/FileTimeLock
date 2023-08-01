@@ -11,10 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.models.CustomPermission
 
-class PermissionAdapter (
-    private val activity : Activity,
+class PermissionAdapter(
+    private val activity: Activity,
     private val permissions: ArrayList<CustomPermission>
-): RecyclerView.Adapter<PermissionAdapter.ViewHolder>(){
+) : RecyclerView.Adapter<PermissionAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
@@ -33,9 +33,9 @@ class PermissionAdapter (
         holder.permissionName.text = permissions[position].name
         holder.permissionDescription.text = permissions[position].description
         holder.permissionIcon.setImageResource(permissions[position].icon)
-        holder.allowBtn.setOnClickListener{
+        holder.allowBtn.setOnClickListener {
             val array = IntArray(0)
-            activity.onRequestPermissionsResult(1, arrayOf( permissions[position].permission), array)
+            activity.onRequestPermissionsResult(1, arrayOf(permissions[position].permission), array)
         }
 
     }
@@ -44,9 +44,8 @@ class PermissionAdapter (
         val permissionName: TextView = itemView.findViewById(R.id.permission_name_textView)
         val permissionDescription: TextView = itemView.findViewById(R.id.permission_desc_textView)
         val permissionIcon: ImageView = itemView.findViewById(R.id.permission_icon_image)
-        val allowBtn : Button = itemView.findViewById(R.id.allow_btn_permission)
+        val allowBtn: Button = itemView.findViewById(R.id.allow_btn_permission)
     }
-
 
 
 }

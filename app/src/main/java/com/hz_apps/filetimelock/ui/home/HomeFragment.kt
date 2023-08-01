@@ -23,7 +23,7 @@ class HomeFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private var clickListener : OnImageAndTextClickListener? = null
+    private var clickListener: OnImageAndTextClickListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,7 +40,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val items = ArrayList<ItemWithImageAndName>()
         val images = resources.obtainTypedArray(R.array.home_menu_items_icons)
-        val names : Array<String> = resources.getStringArray(R.array.home_menu_items_names)
+        val names: Array<String> = resources.getStringArray(R.array.home_menu_items_names)
 
         for (i in 0..1) {
             val item = ItemWithImageAndName()
