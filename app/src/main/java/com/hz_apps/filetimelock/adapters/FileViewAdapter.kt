@@ -30,7 +30,7 @@ class FileViewAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
-            R.layout.file_view, parent, false
+            R.layout.file_linear_view, parent, false
         )
         return ViewHolder(view)
     }
@@ -42,22 +42,26 @@ class FileViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.fileName.text = files[position].name
 
-        if (files[position].isDirectory) {
-            holder.fileIcon.setImageResource(R.drawable.folder_icon)
-        } else {
-            Glide.with(holder.itemView.context)
-                .load(files[position])
-                .into(holder.fileIcon)
+        val currentFile = files[position]
+
+        if (currentFile.isDirectory) {
+            holder.fileIcon.setImageResource(R.drawable.ic_folder)
+//            holder.noOfItems.visibility = View.VISIBLE
+//            holder.noOfItems.text = "${currentFile.length()} items"
+        }else{
+            setFileIcon(holder, files[position])
         }
+
+
 
         holder.itemView.setOnClickListener {
             if (files[position].isDirectory) {
-                viewModel.file = files[position]
+                viewModel.file = currentFile
                 updateFiles()
             }
             else if (files[position].isFile) {
                 val intent = Intent()
-                intent.putExtra("result", files[position])
+                intent.putExtra("result", currentFile)
                 activity.setResult(Activity.RESULT_OK, intent)
                 activity.finish()
             }
@@ -91,5 +95,40 @@ class FileViewAdapter(
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val fileName: TextView = itemView.findViewById(R.id.name_file_view)
         val fileIcon: ImageView = itemView.findViewById(R.id.icon_file_view)
+        val noOfItems : TextView = itemView.findViewById(R.id.no_of_items_file_view)
+    }
+
+    fun getFileTypeIcon(file: File, holder: ViewHolder): Int {
+
+        val extension = file.path.substring(file.path.lastIndexOf(".") + 1)
+
+        return when (extension) {
+            "jpg", "png", "gif", "jpeg", "JPEG", "PNG", "GIF", "JPG" -> {
+                Glide.with(holder.itemView.context)
+                    .load(file)
+                    .placeholder(R.drawable.ic_image)
+                    .into(holder.fileIcon)
+                0
+            }
+            "mp4", "mkv", "avi", "mov", "wmv" -> {
+                Glide.with(holder.itemView.context)
+                    .load(file)
+                    .placeholder(R.drawable.ic_video)
+                    .into(holder.fileIcon)
+                0
+            }
+            "mp3", "m4a", "wav", "ogg" -> R.drawable.ic_music
+            "zip", "rar", "7z" -> R.drawable.ic_zip
+            "pdf" -> R.drawable.ic_pdf
+            "apk" -> R.drawable.ic_apk
+            else -> R.drawable.ic_unknown_file
+        }
+    }
+
+    fun setFileIcon(holder: ViewHolder, currentFile: File) {
+        val resource = getFileTypeIcon(currentFile, holder)
+        if (resource == 0)
+            return
+        holder.fileIcon.setImageResource(resource)
     }
 }
