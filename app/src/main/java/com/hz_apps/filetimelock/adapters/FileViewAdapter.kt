@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
+import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 
 class FileViewAdapter(
@@ -49,7 +49,7 @@ class FileViewAdapter(
 //            holder.noOfItems.visibility = View.VISIBLE
 //            holder.noOfItems.text = "${currentFile.length()} items"
         }else{
-            setFileIcon(holder, files[position])
+            setFileIcon(holder.itemView.context, holder.fileIcon, files[position])
         }
 
 
@@ -96,39 +96,5 @@ class FileViewAdapter(
         val fileName: TextView = itemView.findViewById(R.id.name_file_view)
         val fileIcon: ImageView = itemView.findViewById(R.id.icon_file_view)
         val noOfItems : TextView = itemView.findViewById(R.id.no_of_items_file_view)
-    }
-
-    fun getFileTypeIcon(file: File, holder: ViewHolder): Int {
-
-        val extension = file.path.substring(file.path.lastIndexOf(".") + 1)
-
-        return when (extension) {
-            "jpg", "png", "gif", "jpeg", "JPEG", "PNG", "GIF", "JPG" -> {
-                Glide.with(holder.itemView.context)
-                    .load(file)
-                    .placeholder(R.drawable.ic_image)
-                    .into(holder.fileIcon)
-                0
-            }
-            "mp4", "mkv", "avi", "mov", "wmv" -> {
-                Glide.with(holder.itemView.context)
-                    .load(file)
-                    .placeholder(R.drawable.ic_video)
-                    .into(holder.fileIcon)
-                0
-            }
-            "mp3", "m4a", "wav", "ogg" -> R.drawable.ic_music
-            "zip", "rar", "7z" -> R.drawable.ic_zip
-            "pdf" -> R.drawable.ic_pdf
-            "apk" -> R.drawable.ic_apk
-            else -> R.drawable.ic_unknown_file
-        }
-    }
-
-    private fun setFileIcon(holder: ViewHolder, currentFile: File) {
-        val resource = getFileTypeIcon(currentFile, holder)
-        if (resource == 0)
-            return
-        holder.fileIcon.setImageResource(resource)
     }
 }
