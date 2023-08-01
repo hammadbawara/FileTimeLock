@@ -1,6 +1,8 @@
 package com.hz_apps.filetimelock.adapters
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,14 +14,17 @@ import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
 import java.io.File
 
-class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
+class FileViewAdapter(
+) : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
 
     private lateinit var files: MutableList<File>
     private lateinit var viewModel: FilePickerViewModel
+    private lateinit var activity: Activity
 
-    constructor(viewModel: FilePickerViewModel) : this() {
+    constructor(activity: Activity, viewModel: FilePickerViewModel) : this() {
         this.viewModel = viewModel
         this.files = listFilteredFiles(viewModel.file)
+        this.activity = activity;
     }
 
 
@@ -49,6 +54,12 @@ class FileViewAdapter() : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
             if (files[position].isDirectory) {
                 viewModel.file = files[position]
                 updateFiles()
+            }
+            else if (files[position].isFile) {
+                val intent = Intent()
+                intent.putExtra("result", files[position])
+                activity.setResult(Activity.RESULT_OK, intent)
+                activity.finish()
             }
         }
 

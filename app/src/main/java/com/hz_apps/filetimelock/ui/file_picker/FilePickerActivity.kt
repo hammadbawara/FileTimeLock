@@ -1,6 +1,7 @@
 package com.hz_apps.filetimelock.ui.file_picker
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.hz_apps.filetimelock.adapters.FileViewAdapter
@@ -21,9 +22,13 @@ class FilePickerActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+        supportActionBar?.title = "Internal Storage"
+
         bindings.cancelFilePicker.setOnClickListener {
             super.onBackPressed()
         }
+
+        bindings.selectCancelFilePicker.visibility = View.GONE;
 
 
         // ask user for storage permission
@@ -31,7 +36,7 @@ class FilePickerActivity : AppCompatActivity() {
         //val files = getFilesAndFolders(path);
 
 
-        adapter = FileViewAdapter(viewModel)
+        adapter = FileViewAdapter(this, viewModel )
 
         bindings.recyclerFileView.adapter = adapter
 
