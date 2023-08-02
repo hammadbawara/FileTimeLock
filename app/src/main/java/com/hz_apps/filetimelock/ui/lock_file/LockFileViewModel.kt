@@ -17,4 +17,8 @@ class LockFileViewModel: ViewModel() {
         }
     }
 
+    fun setDateTime(ldt: LocalDateTime) {
+        lockDateTime = ldt
+    }
+
 }
