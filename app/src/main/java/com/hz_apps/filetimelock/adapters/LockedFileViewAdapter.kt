@@ -10,12 +10,13 @@ import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.utils.calculateTimeDifference
 import com.hz_apps.filetimelock.utils.setFileIcon
+import java.time.LocalDateTime
 
 class LockedFileViewAdapter (
     private val items : List<LockFile>
 ) : RecyclerView.Adapter<LockedFileViewAdapter.ViewHolder>() {
 
-
+    private var timeNow : LocalDateTime = LocalDateTime.now()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).
         inflate(R.layout.item_locked_file, parent, false)
@@ -29,8 +30,7 @@ class LockedFileViewAdapter (
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         setFileIcon(holder.imageView, items[position].extension)
         holder.name.text = items[position].name
-        holder.remainingTime.text = calculateTimeDifference(items[position].lockTime, items[position].unlockTime)
-
+        holder.remainingTime.text = calculateTimeDifference(timeNow, items[position].unlockTime)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

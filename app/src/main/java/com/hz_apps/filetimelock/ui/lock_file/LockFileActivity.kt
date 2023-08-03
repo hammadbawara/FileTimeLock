@@ -78,8 +78,8 @@ class LockFileActivity : AppCompatActivity() {
         val file = LockFile(
             id,
             viewModel.lockFile!!.name,
-            viewModel.getDateTime(),
-            viewModel.getDateTime(),
+            LocalDateTime.now(),
+            viewModel.getUnlockTime(),
             destination,
             viewModel.lockFile!!.length().toString(),
             getFileExtension(viewModel.lockFile!!)
@@ -91,8 +91,8 @@ class LockFileActivity : AppCompatActivity() {
 
     // Set date and time in the TextView based on the ViewModel's date and time
     private fun setDateTimeInTextView() {
-        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.getDateTime())
-        bindings.dateLockFile.text = getDateInFormat(viewModel.getDateTime())
+        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.getUnlockTime())
+        bindings.dateLockFile.text = getDateInFormat(viewModel.getUnlockTime())
     }
 
     // Set file information and date-time listeners
@@ -114,7 +114,7 @@ class LockFileActivity : AppCompatActivity() {
         bindings.dateLockFile.setOnClickListener {
             val datePickerBuilder = datePicker.build()
             datePickerBuilder.addOnPositiveButtonClickListener {
-                val dateTime = viewModel.getDateTime()
+                val dateTime = viewModel.getUnlockTime()
                 val selection = datePickerBuilder.selection
 
                 // TODO: Implement date lock file picker based on 'selection'
@@ -124,13 +124,13 @@ class LockFileActivity : AppCompatActivity() {
 
         // Time picker click listener
         bindings.timeLockFile.setOnClickListener {
-            timePicker.setHour(viewModel.getDateTime().hour)
-            timePicker.setMinute(viewModel.getDateTime().minute)
+            timePicker.setHour(viewModel.getUnlockTime().hour)
+            timePicker.setMinute(viewModel.getUnlockTime().minute)
 
             val timePickerBuilder = timePicker.build()
 
             timePickerBuilder.addOnPositiveButtonClickListener {
-                val dateTime = viewModel.getDateTime()
+                val dateTime = viewModel.getUnlockTime()
                 viewModel.setDateTime(
                     LocalDateTime.of(
                         dateTime.year,
