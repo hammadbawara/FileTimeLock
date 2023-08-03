@@ -1,12 +1,13 @@
 package com.hz_apps.filetimelock.database
 
 import androidx.annotation.WorkerThread
+import androidx.lifecycle.LiveData
 
 class DBRepository(
     private val lockFileDao: LockFileDao
 ) {
 
-    fun  getAllLockFiles() : List<LockFile> {
+    fun  getAllLockFiles() : LiveData<MutableList<LockFile>> {
         return lockFileDao.getAll()
     }
 

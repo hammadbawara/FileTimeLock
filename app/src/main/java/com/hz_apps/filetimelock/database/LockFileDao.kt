@@ -1,5 +1,6 @@
 package com.hz_apps.filetimelock.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -9,7 +10,7 @@ import androidx.room.Query
 interface LockFileDao {
 
     @Query("SELECT * FROM LockFile")
-    fun getAll() : List<LockFile>
+    fun getAll() : LiveData<MutableList<LockFile>>
 
     @Insert
     fun insert(file : LockFile)

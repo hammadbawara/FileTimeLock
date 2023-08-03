@@ -31,9 +31,11 @@ class FilesActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             val lockedFiles = viewModel.getLockedFiles(repository)
-            val adapter = LockedFileViewAdapter(lockedFiles)
-            launch (Dispatchers.Main){
-                bindings.lockedFilesRecyclerview.adapter = adapter
+            launch(Dispatchers.Main) {
+                lockedFiles.observe(this@FilesActivity) {
+                val adapter = LockedFileViewAdapter(it)
+                    bindings.lockedFilesRecyclerview.adapter = adapter
+                }
             }
         }
 
