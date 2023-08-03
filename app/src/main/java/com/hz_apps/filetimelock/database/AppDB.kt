@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [LockFile::class], version = 1, exportSchema = false)
+@Database(entities = [LockFile::class], version = 2, exportSchema = false)
 abstract class AppDB : RoomDatabase() {
     abstract fun lockFileDao() : LockFileDao
 
@@ -15,7 +15,7 @@ abstract class AppDB : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDB? = null
 
-        fun getDatabase(context: Context): AppDB {
+        fun getInstance(context: Context): AppDB {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
             return INSTANCE ?: synchronized(this) {

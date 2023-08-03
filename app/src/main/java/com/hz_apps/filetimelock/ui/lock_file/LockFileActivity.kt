@@ -19,6 +19,7 @@ import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.utils.copyFile
 import com.hz_apps.filetimelock.utils.createFolder
 import com.hz_apps.filetimelock.utils.getDateInFormat
+import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.localDateTimeToTimestamp
 import com.hz_apps.filetimelock.utils.runShellCommand
@@ -57,7 +58,7 @@ class LockFileActivity : AppCompatActivity() {
 
     private suspend fun saveFilesIntoDatabase() {
 
-        val db = AppDB.getDatabase(applicationContext)
+        val db = AppDB.getInstance(applicationContext)
         val repository = DBRepository(db.lockFileDao())
 
         val id = try { repository.getLastId() + 1 }
@@ -81,12 +82,12 @@ class LockFileActivity : AppCompatActivity() {
             localDateTimeToTimestamp(viewModel.getDateTime()),
             localDateTimeToTimestamp(viewModel.getDateTime()),
             destination,
-            viewModel.lockFile!!.length().toString()
+            viewModel.lockFile!!.length().toString(),
+            getFileExtension(viewModel.lockFile!!)
         )
 
         repository.insertLockFile(file)
         finish()
-        TODO("File not deleting")
     }
 
     // Set date and time in the TextView based on the ViewModel's date and time

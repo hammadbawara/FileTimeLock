@@ -10,6 +10,7 @@ data class LockFile (
     val lockTime: Long,
     val unlockTime : Long,
     val location: String,
-    val size : String
+    val size : String,
+    val extension: String
 ) {
 }
