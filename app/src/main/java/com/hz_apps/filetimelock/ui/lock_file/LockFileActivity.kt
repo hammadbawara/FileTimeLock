@@ -21,7 +21,6 @@ import com.hz_apps.filetimelock.utils.createFolder
 import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
-import com.hz_apps.filetimelock.utils.localDateTimeToTimestamp
 import com.hz_apps.filetimelock.utils.runShellCommand
 import com.hz_apps.filetimelock.utils.setFileIcon
 import kotlinx.coroutines.CoroutineScope
@@ -79,8 +78,8 @@ class LockFileActivity : AppCompatActivity() {
         val file = LockFile(
             id,
             viewModel.lockFile!!.name,
-            localDateTimeToTimestamp(viewModel.getDateTime()),
-            localDateTimeToTimestamp(viewModel.getDateTime()),
+            viewModel.getDateTime(),
+            viewModel.getDateTime(),
             destination,
             viewModel.lockFile!!.length().toString(),
             getFileExtension(viewModel.lockFile!!)

@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.database.LockFile
+import com.hz_apps.filetimelock.utils.calculateTimeDifference
 import com.hz_apps.filetimelock.utils.setFileIcon
 
 class LockedFileViewAdapter (
@@ -28,7 +29,8 @@ class LockedFileViewAdapter (
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         setFileIcon(holder.imageView, items[position].extension)
         holder.name.text = items[position].name
-        holder.remainingTime.text = items[position].unlockTime.toString()
+        holder.remainingTime.text = calculateTimeDifference(items[position].lockTime, items[position].unlockTime)
+
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,3 +39,5 @@ class LockedFileViewAdapter (
         val remainingTime : TextView = itemView.findViewById(R.id.remaining_time_locked_item)
     }
 }
+
+

@@ -1,5 +1,6 @@
 package com.hz_apps.filetimelock.utils
 
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -24,11 +25,20 @@ fun getDateInFormat(dateTime: LocalDateTime): String {
     return dateTime.format(formatter)
 }
 
-fun localDateTimeToTimestamp(localDateTime: LocalDateTime): Long {
-    return localDateTime.toEpochSecond(java.time.ZoneOffset.UTC)
-}
+fun calculateTimeDifference(lockDate: LocalDateTime, unlockDate: LocalDateTime): String {
+    if (lockDate >= unlockDate) {
+        return "unlocked"
+    }
 
-// Function to convert a long timestamp to LocalDateTime
-fun timestampToLocalDateTime(timestamp: Long): LocalDateTime {
-    return LocalDateTime.ofEpochSecond(timestamp, 0, java.time.ZoneOffset.UTC)
+    val duration = Duration.between(lockDate, unlockDate)
+
+    return when {
+        duration.toDays() >= 365 -> "${duration.toDays() / 365} years"
+        duration.toDays() >= 30 -> "${duration.toDays() / 30} months"
+        duration.toDays() >= 7 -> "${duration.toDays() / 7} weeks"
+        duration.toDays() > 0 -> "${duration.toDays()} days"
+        duration.toHours() > 0 -> "${duration.toHours()} hours"
+        duration.toMinutes() > 0 -> "${duration.toMinutes()} minutes"
+        else -> "Less than a minute"
+    }
 }
