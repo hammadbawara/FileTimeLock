@@ -23,3 +23,12 @@ fun getDateInFormat(dateTime: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy")
     return dateTime.format(formatter)
 }
+
+fun localDateTimeToTimestamp(localDateTime: LocalDateTime): Long {
+    return localDateTime.toEpochSecond(java.time.ZoneOffset.UTC)
+}
+
+// Function to convert a long timestamp to LocalDateTime
+fun timestampToLocalDateTime(timestamp: Long): LocalDateTime {
+    return LocalDateTime.ofEpochSecond(timestamp, 0, java.time.ZoneOffset.UTC)
+}

@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
+    id 'com.google.devtools.ksp'
 }
 
 android {
@@ -55,6 +56,16 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    // Glide for showing images
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+
+    // Desugaring library for converting java 8 code into java 7 code
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+
+    // Room database dependency
+    def room_version = "2.5.2"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    ksp "androidx.room:room-compiler:$room_version"
 }
