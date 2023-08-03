@@ -21,7 +21,11 @@ import com.hz_apps.filetimelock.utils.createFolder
 import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.localDateTimeToTimestamp
+import com.hz_apps.filetimelock.utils.runShellCommand
 import com.hz_apps.filetimelock.utils.setFileIcon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
 
@@ -44,13 +48,14 @@ class LockFileActivity : AppCompatActivity() {
         }
 
         bindings.okLockFile.setOnClickListener {
-            saveFilesIntoDatabase()
-
-
+            CoroutineScope(Dispatchers.IO).launch {
+                saveFilesIntoDatabase()
+            }
+            Toast.makeText(this@LockFileActivity, "File locked", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun saveFilesIntoDatabase() {
+    private suspend fun saveFilesIntoDatabase() {
 
         val db = AppDB.getDatabase(applicationContext)
         val repository = DBRepository(db.lockFileDao())
@@ -66,7 +71,9 @@ class LockFileActivity : AppCompatActivity() {
             File(destination)
         )
 
-        com.hz_apps.filetimelock.utils.deleteFile(viewModel.lockFile!!)
+        viewModel.lockFile!!.delete()
+
+        runShellCommand("lsof | grep ${viewModel.lockFile!!.absolutePath}")
 
         val file = LockFile(
             id,
@@ -77,12 +84,9 @@ class LockFileActivity : AppCompatActivity() {
             viewModel.lockFile!!.length().toString()
         )
 
-
-        TODO("Save this file into database")
-
-        Toast.makeText(this, "File Locked", Toast.LENGTH_SHORT).show()
+        repository.insertLockFile(file)
         finish()
-
+        TODO("File not deleting")
     }
 
     // Set date and time in the TextView based on the ViewModel's date and time
