@@ -42,7 +42,7 @@ fun copyFile(source: File, destination: File) {
 }
 
 fun createFolder(context: Context, folderName: String): Boolean {
-    val folderPath = File("/data/data/${context.packageName}/", folderName)
+    val folderPath = File("${context.filesDir.path}/", folderName)
     if (!folderPath.exists()) {
         return folderPath.mkdirs()
     }

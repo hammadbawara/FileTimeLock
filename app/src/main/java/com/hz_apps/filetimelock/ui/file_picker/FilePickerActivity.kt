@@ -44,6 +44,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (adapter.getCurrentPath() == viewModel.path) {
             super.onBackPressed()

@@ -21,7 +21,6 @@ import com.hz_apps.filetimelock.utils.createFolder
 import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
-import com.hz_apps.filetimelock.utils.runShellCommand
 import com.hz_apps.filetimelock.utils.setFileIcon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,15 +70,11 @@ class LockFileActivity : AppCompatActivity() {
 
         createFolder(this, "data")
 
-        val destination = "/data/data/${this.packageName}/data/$id"
+        val destination = "${this.filesDir.path}/$id"
 
         copyFile(viewModel.lockFile!!,
             File(destination)
         )
-
-        viewModel.lockFile!!.delete()
-
-        runShellCommand("lsof | grep ${viewModel.lockFile!!.absolutePath}")
 
         val file = LockFile(
             id,
@@ -92,6 +87,14 @@ class LockFileActivity : AppCompatActivity() {
         )
 
         repository.insertLockFile(file)
+
+        // Delete the original file
+        if (viewModel.lockFile!!.exists()){
+            if (!viewModel.lockFile!!.delete()) {
+                println("File not deleted")
+            }
+        }
+
         finish()
     }
 

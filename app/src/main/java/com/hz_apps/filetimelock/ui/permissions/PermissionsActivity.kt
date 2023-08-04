@@ -1,12 +1,11 @@
 package com.hz_apps.filetimelock.ui.permissions
 
-import android.content.pm.PackageManager
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.hz_apps.filetimelock.adapters.PermissionAdapter
 import com.hz_apps.filetimelock.databinding.ActivityPermissionsBinding
-import com.hz_apps.filetimelock.models.CustomPermission
+import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 
 class PermissionsActivity : AppCompatActivity() {
 
@@ -15,38 +14,30 @@ class PermissionsActivity : AppCompatActivity() {
         val bindings = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(bindings.root)
 
-        val intent = intent
+        val requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    val intent = Intent(this, LockFileActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
 
-
-        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra(
-                "permission",
-                CustomPermission::class.java
-            ) as ArrayList<CustomPermission>
-        } else {
-            intent.getParcelableArrayListExtra<CustomPermission>("permission") as ArrayList<CustomPermission>
-        }
-
-        val adapter = PermissionAdapter(this, permissions)
-
-        bindings.permissionsRecyclerview.adapter = adapter
-
-
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == 10) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-            } else {
-                // Permission denied
+                }
             }
+
+        bindings.allowBtnPermission.setOnClickListener{
+            requestPermissionLauncher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
         }
+
+        bindings.goBackBtnPermission.setOnClickListener {
+            finish()
+        }
+
+
+
+
     }
+
 }
