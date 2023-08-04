@@ -19,7 +19,10 @@ class FilesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bindings = ActivityFilesBinding.inflate(layoutInflater)
+        bindings.toolbarFilesActivity.title = "File Time Lock"
         setContentView(bindings.root)
+        setSupportActionBar(bindings.toolbarFilesActivity)
+
 
         val appDB = AppDB.getInstance(applicationContext)
         val repository = DBRepository(appDB.lockFileDao())

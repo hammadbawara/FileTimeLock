@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+    android:background="?selectableItemBackground">
 
     <ImageView
         android:id="@+id/icon_file_view"
-        android:layout_width="50dp"
+        android:layout_width="60dp"
         android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:outlineProvider="bounds"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@tools:sample/avatars" />

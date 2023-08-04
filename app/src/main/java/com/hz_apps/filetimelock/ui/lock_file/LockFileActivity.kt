@@ -39,6 +39,12 @@ class LockFileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         bindings = ActivityLockFileBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+        setSupportActionBar(bindings.toolbarLockActivity)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        bindings.toolbarLockActivity.setNavigationOnClickListener {
+            onBackPressed()
+        }
+        bindings.toolbarLockActivity.title = "Lock File"
 
         // Check if the selected file is already available or launch the file picker
         if (viewModel.lockFile == null) {

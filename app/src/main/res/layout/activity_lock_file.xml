@@ -18,8 +18,8 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/materialToolbar2"
-        android:layout_width="409dp"
+        android:id="@+id/toolbar_lock_activity"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
@@ -37,37 +37,31 @@
         app:cardCornerRadius="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/materialToolbar2">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_lock_activity">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="10dp">
 
             <include
                 android:id="@+id/file_view_lock_file"
-                layout="@layout/file_linear_view">
+                layout="@layout/item_file_view_linear">
 
             </include>
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="Unlock Time"
-                android:textSize="16sp" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp">
+                android:padding="3dp">
 
                 <TextView
                     android:id="@+id/date_lock_file"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:ems="10"
+                    android:fontFamily="@font/roboto"
                     android:inputType="date"
                     android:text="Wed, Aug 02, 2023"
                     android:textSize="20sp"
@@ -81,6 +75,7 @@
                     android:layout_width="101dp"
                     android:layout_height="0dp"
                     android:ems="10"
+                    android:fontFamily="@font/roboto"
                     android:gravity="center"
                     android:inputType="time"
                     android:text="01:10 PM"
