@@ -2,7 +2,9 @@ package com.hz_apps.filetimelock.ui.files
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
@@ -37,8 +39,14 @@ class FilesActivity : AppCompatActivity() {
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
             launch(Dispatchers.Main) {
                 lockedFiles.observe(this@FilesActivity) {
-                    val adapter = LockedFileViewAdapter(it)
-                    bindings.lockedFilesRecyclerview.adapter = adapter
+                    if (it.size == 0) {
+                        bindings.emptyLockedFiles.visibility = View.VISIBLE
+                    }else{
+                        if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
+                        val adapter = LockedFileViewAdapter(it)
+                        bindings.lockedFilesRecyclerview.adapter = adapter
+                    }
+
                 }
             }
         }
