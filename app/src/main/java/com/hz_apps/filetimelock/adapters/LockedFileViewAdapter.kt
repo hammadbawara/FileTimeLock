@@ -1,15 +1,11 @@
 package com.hz_apps.filetimelock.adapters
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
@@ -21,11 +17,12 @@ import java.time.LocalDateTime
 
 class LockedFileViewAdapter (
     private val activity : Activity,
-    private val items : List<LockFile>, private val actionbar: ActionBar?
+    val items : List<LockFile>,
+    private val clickListenerLockedFile: ClickListenerLockedFile
 ) : RecyclerView.Adapter<LockedFileViewAdapter.ViewHolder>(){
 
     private var actionMode : ActionMode.Callback? = null
-    private val checkedItems : MutableList<Boolean> = MutableList(items.size){false}
+    val checkedItems : MutableList<Boolean> = MutableList(items.size){false}
 
     private var timeNow : LocalDateTime = LocalDateTime.now()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -49,16 +46,10 @@ class LockedFileViewAdapter (
             setItemBackgroundUnselected(holder.itemView)
 
         holder.itemView.setOnLongClickListener {
-            if (actionMode == null){
-                startActionMode()
-                setItemSelected(holder.itemView, position)
-            }else{
-                setItemSelected(holder.itemView, position)
-            }
-            true
+            clickListenerLockedFile.onItemLongClicked(holder.itemView, position)
         }
         holder.itemView.setOnClickListener {
-            setItemSelected(holder.itemView, position)
+            clickListenerLockedFile.onItemClicked(holder.itemView, position)
         }
     }
 
@@ -68,34 +59,7 @@ class LockedFileViewAdapter (
         val remainingTime: TextView = itemView.findViewById(R.id.remaining_time_locked_item)
     }
 
-    @SuppressLint("RestrictedApi")
-    private fun startActionMode() {
-        actionMode = object : ActionMode.Callback {
-            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                activity.menuInflater.inflate(R.menu.item_locked_file_context_menu, menu)
-                return true
-            }
-
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                return true
-            }
-
-            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-                return true
-            }
-
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                checkedItems.fill(false)
-                notifyDataSetChanged()
-                actionMode = null
-            }
-
-        }
-        actionbar?.startActionMode(actionMode!!)
-
-    }
-
-    private fun setItemSelected(item : View, position: Int) {
+    fun setItemSelected(item : View, position: Int) {
         if (actionMode == null) {
             return
         }
@@ -114,6 +78,11 @@ class LockedFileViewAdapter (
     private fun setItemBackgroundUnselected(item : View) {
         item.setBackgroundColor(activity.getColor(R.color.white))
     }
+}
+
+interface ClickListenerLockedFile {
+    fun onItemClicked(itemView : View, position: Int)
+    fun onItemLongClicked(itemView : View, position: Int) : Boolean
 }
 
 
