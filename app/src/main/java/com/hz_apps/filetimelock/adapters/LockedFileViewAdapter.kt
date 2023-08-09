@@ -73,7 +73,8 @@ class LockedFileViewAdapter (
         notifyItemChanged(position)
     }
     private fun setItemBackgroundSelected(item : View) {
-        item.setBackgroundColor(activity.getColor(R.color.purple_500))
+
+        item.setBackgroundColor(activity.getColor(R.color.light_blue))
     }
     private fun setItemBackgroundUnselected(item : View) {
         item.setBackgroundColor(activity.getColor(R.color.white))

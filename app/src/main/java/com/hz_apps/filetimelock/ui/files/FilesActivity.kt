@@ -72,9 +72,9 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
             bindings.emptyLockedFiles.visibility = View.VISIBLE
         }else{
             if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
-            adapter = LockedFileViewAdapter(this, it, this)
-            bindings.lockedFilesRecyclerview.adapter = adapter
         }
+        adapter = LockedFileViewAdapter(this, it, this)
+        bindings.lockedFilesRecyclerview.adapter = adapter
     }
 
     override fun onItemClicked(itemView: View, position: Int) {

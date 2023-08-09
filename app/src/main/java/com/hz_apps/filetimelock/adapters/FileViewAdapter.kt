@@ -52,8 +52,6 @@ class FileViewAdapter(
             setFileIcon(holder.itemView.context, holder.fileIcon, files[position])
         }
 
-
-
         holder.itemView.setOnClickListener {
             if (files[position].isDirectory) {
                 viewModel.file = currentFile
