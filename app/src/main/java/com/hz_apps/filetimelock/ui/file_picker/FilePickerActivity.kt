@@ -16,11 +16,7 @@ class FilePickerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val bindings = ActivityFilePickerBinding.inflate(layoutInflater)
         setContentView(bindings.root)
-        setSupportActionBar(bindings.toolbarFilePicker)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        bindings.toolbarFilePicker.setNavigationOnClickListener {
-            onBackPressed()
-        }
 
         supportActionBar?.title = "Internal Storage"
 

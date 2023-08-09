@@ -12,6 +12,7 @@ import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
+import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
@@ -22,12 +23,11 @@ import kotlinx.coroutines.launch
 class FilesActivity : AppCompatActivity() {
 
     private val viewModel = FilesViewModel()
+    private lateinit var bindings : ActivityFilesBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bindings = ActivityFilesBinding.inflate(layoutInflater)
-        bindings.toolbarFilesActivity.title = "File Time Lock"
+        bindings = ActivityFilesBinding.inflate(layoutInflater)
         setContentView(bindings.root)
-        setSupportActionBar(bindings.toolbarFilesActivity)
 
         val appDB = AppDB.getInstance(applicationContext)
         val repository = DBRepository(appDB.lockFileDao())
@@ -49,18 +49,19 @@ class FilesActivity : AppCompatActivity() {
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
             launch(Dispatchers.Main) {
                 lockedFiles.observe(this@FilesActivity) {
-                    if (it.size == 0) {
-                        bindings.emptyLockedFiles.visibility = View.VISIBLE
-                    }else{
-                        if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
-                        val adapter = LockedFileViewAdapter(it)
-                        bindings.lockedFilesRecyclerview.adapter = adapter
-                    }
-
+                    setRecyclerView(it)
                 }
             }
         }
+    }
 
-
+    private fun setRecyclerView(it : MutableList<LockFile>) {
+        if (it.size == 0) {
+            bindings.emptyLockedFiles.visibility = View.VISIBLE
+        }else{
+            if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
+            val adapter = LockedFileViewAdapter(this, it, supportActionBar)
+            bindings.lockedFilesRecyclerview.adapter = adapter
+        }
     }
 }

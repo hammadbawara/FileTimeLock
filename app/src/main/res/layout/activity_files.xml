@@ -6,16 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.files.FilesActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_files_activity"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floating_btn_files_activity"
         android:layout_width="wrap_content"
@@ -31,12 +21,12 @@
         android:id="@+id/locked_files_recyclerview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_files_activity"
-        tools:listitem="@layout/item_locked_file"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/item_locked_file">
 
     </androidx.recyclerview.widget.RecyclerView>
 
