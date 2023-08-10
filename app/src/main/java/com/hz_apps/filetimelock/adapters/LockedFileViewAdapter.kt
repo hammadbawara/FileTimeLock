@@ -1,6 +1,7 @@
 package com.hz_apps.filetimelock.adapters
 
 import android.app.Activity
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,11 +74,10 @@ class LockedFileViewAdapter (
         notifyItemChanged(position)
     }
     private fun setItemBackgroundSelected(item : View) {
-
-        item.setBackgroundColor(activity.getColor(R.color.light_blue))
+        item.setBackgroundColor(activity.resources.getColor(R.color.selected_item_background, activity.theme))
     }
     private fun setItemBackgroundUnselected(item : View) {
-        item.setBackgroundColor(activity.getColor(R.color.white))
+        item.setBackgroundColor(Color.TRANSPARENT)
     }
 }
 
