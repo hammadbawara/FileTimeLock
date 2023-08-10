@@ -19,7 +19,9 @@ import java.io.File
 import java.time.LocalDateTime
 
 class LockFileDialog(
-    private val lockFile : File, private val unlockTime : LocalDateTime
+    private val lockFile : File,
+    private val unlockTime : LocalDateTime,
+    private val onFileLockedDialogListener: OnFileLockedDialogListener
 ) : DialogFragment() {
     private lateinit var bindings : DialogCopyFileBinding
     private lateinit var db : AppDB
@@ -67,8 +69,7 @@ class LockFileDialog(
             dialog.setMessage("Finalizing")
         }
         lockFile()
-
-        dismiss()
+        onFileLockedDialogListener.onFileLocked()
     }
 
     private suspend fun createDestinationFilePath() {
@@ -94,5 +95,10 @@ class LockFileDialog(
 
     private suspend fun copyFile() {
         copyFile(lockFile, File(destination), bindings.copyFileProgressBar)
+    }
+
+    interface OnFileLockedDialogListener {
+        fun onFileLocked()
+        fun onFileLockedError()
     }
 }

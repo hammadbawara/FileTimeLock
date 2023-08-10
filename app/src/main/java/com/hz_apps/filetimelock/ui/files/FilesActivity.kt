@@ -23,7 +23,7 @@ import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
-import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
+import com.hz_apps.filetimelock.ui.lock_file.LockFileActivityDialog
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +53,7 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
                 this,
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(this, LockFileActivity::class.java)
+                val intent = Intent(this, LockFileActivityDialog::class.java)
                 startActivity(intent)
             }else{
                 val intent = Intent(this, PermissionsActivity::class.java)

@@ -19,7 +19,7 @@ import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 import java.time.LocalDateTime
 
-class LockFileActivity : AppCompatActivity() {
+class LockFileActivityDialog : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
 
     private lateinit var selectedFile: File
     private val viewModel: LockFileViewModel by viewModels()
@@ -39,7 +39,7 @@ class LockFileActivity : AppCompatActivity() {
         }
 
         bindings.okLockFile.setOnClickListener {
-            val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.getUnlockTime()) }
+            val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.getUnlockTime(), this) }
             lockFileDialog?.show(supportFragmentManager, "copyFile")
         }
     }
@@ -127,5 +127,13 @@ class LockFileActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return super.onSupportNavigateUp()
+    }
+
+    override fun onFileLocked() {
+        finish()
+    }
+
+    override fun onFileLockedError() {
+        TODO("Not yet implemented")
     }
 }
