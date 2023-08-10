@@ -7,11 +7,13 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.R
@@ -41,9 +43,11 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
         bindings = ActivityFilesBinding.inflate(layoutInflater)
         setContentView(bindings.root)
 
+        // Creating database instance
         val appDB = AppDB.getInstance(applicationContext)
         repository = DBRepository(appDB.lockFileDao())
 
+        // floating action button
         bindings.floatingBtnFilesActivity.setOnClickListener {
             if(ContextCompat.checkSelfPermission(
                 this,
@@ -57,6 +61,7 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
             }
         }
 
+        // Getting data from database and setting in recyclerview
         CoroutineScope(Dispatchers.IO).launch {
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
             launch(Dispatchers.Main) {
@@ -79,7 +84,13 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
 
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionModeCallBack == null) {
-
+            val file = File(adapter.lockedFilesList[position].path)
+            val contentUri = FileProvider.getUriForFile(this, "com.hz_apps.filetimelock.FileProvider", file)
+            val intent = Intent(Intent.ACTION_VIEW)
+            val fileType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(adapter.lockedFilesList[position].extension)
+            intent.setDataAndType(contentUri, fileType)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(intent)
         }else {
             adapter.checkedItems[position] = !adapter.checkedItems[position]
             adapter.notifyItemChanged(position)
@@ -138,10 +149,10 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
     fun deleteSelectedItems() {
         for (i in adapter.checkedItems.indices) {
             if (adapter.checkedItems[i]) {
-                val file = File(adapter.items[i].location)
+                val file = File(adapter.lockedFilesList[i].path)
                 file.delete()
                 val job = CoroutineScope(Dispatchers.IO).launch {
-                    repository.delete(adapter.items[i])
+                    repository.delete(adapter.lockedFilesList[i])
                 }
                 runBlocking {
                     job.join()

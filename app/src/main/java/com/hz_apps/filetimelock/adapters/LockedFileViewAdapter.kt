@@ -18,12 +18,12 @@ import java.time.LocalDateTime
 
 class LockedFileViewAdapter (
     private val activity : Activity,
-    val items : List<LockFile>,
+    val lockedFilesList : List<LockFile>,
     private val clickListenerLockedFile: ClickListenerLockedFile
 ) : RecyclerView.Adapter<LockedFileViewAdapter.ViewHolder>(){
 
     private var actionMode : ActionMode.Callback? = null
-    val checkedItems : MutableList<Boolean> = MutableList(items.size){false}
+    val checkedItems : MutableList<Boolean> = MutableList(lockedFilesList.size){false}
 
     private var timeNow : LocalDateTime = LocalDateTime.now()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,13 +33,13 @@ class LockedFileViewAdapter (
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return lockedFilesList.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        setFileIcon(holder.imageView, items[position].extension)
-        holder.name.text = items[position].name
-        holder.remainingTime.text = calculateTimeDifference(timeNow, items[position].unlockTime)
+        setFileIcon(holder.imageView, lockedFilesList[position].extension)
+        holder.name.text = lockedFilesList[position].name
+        holder.remainingTime.text = calculateTimeDifference(timeNow, lockedFilesList[position].unlockTime)
 
         if (checkedItems[position])
             setItemBackgroundSelected(holder.itemView)

@@ -50,6 +50,20 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <provider
+            android:name=".MyFileProvider"
+            android:authorities="com.hz_apps.filetimelock.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:enabled="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths">
+            </meta-data>
+        </provider>
+
+
     </application>
 
 </manifest>
