@@ -21,7 +21,7 @@ class DBRepository(
         lockFileDao.delete(lockFile)
     }
 
-    fun getLastId() : Int {
+    suspend fun getLastId() : Int {
         return lockFileDao.getLastId()
     }
 
