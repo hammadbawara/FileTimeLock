@@ -44,83 +44,88 @@ class LockFileActivity : AppCompatActivity() {
         }
     }
 
-// Set date and time in the TextView based on the ViewModel's date and time
-private fun setDateTimeInTextView() {
-    bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.getUnlockTime())
-    bindings.dateLockFile.text = getDateInFormat(viewModel.getUnlockTime())
-}
-
-// Set file information and date-time listeners
-private fun setValues() {
-    val fileView = bindings.fileViewLockFile
-    fileView.nameFileView.text = viewModel.lockFile?.name ?: "No file selected"
-    setFileIcon(this, fileView.iconFileView, viewModel.lockFile!!)
-
-    setDateTimeInTextView()
-
-    val datePicker = MaterialDatePicker.Builder.datePicker()
-        .setTitleText("Select Unlock Date")
-
-    val timePicker = MaterialTimePicker.Builder()
-        .setTimeFormat(TimeFormat.CLOCK_12H)
-        .setTitleText("Select Unlock Time")
-
-    // Date picker click listener
-    bindings.dateLockFile.setOnClickListener {
-        val datePickerBuilder = datePicker.build()
-        datePickerBuilder.addOnPositiveButtonClickListener {
-            val dateTime = viewModel.getUnlockTime()
-            val selection = datePickerBuilder.selection
-
-            // TODO: Implement date lock file picker based on 'selection'
-        }
-        datePickerBuilder.show(supportFragmentManager, "DATE_PICKER")
+    // Set date and time in the TextView based on the ViewModel's date and time
+    private fun setDateTimeInTextView() {
+        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.getUnlockTime())
+        bindings.dateLockFile.text = getDateInFormat(viewModel.getUnlockTime())
     }
 
-    // Time picker click listener
-    bindings.timeLockFile.setOnClickListener {
-        timePicker.setHour(viewModel.getUnlockTime().hour)
-        timePicker.setMinute(viewModel.getUnlockTime().minute)
+    // Set file information and date-time listeners
+    private fun setValues() {
+        val fileView = bindings.fileViewLockFile
+        fileView.nameFileView.text = viewModel.lockFile?.name ?: "No file selected"
+        setFileIcon(this, fileView.iconFileView, viewModel.lockFile!!)
 
-        val timePickerBuilder = timePicker.build()
+        setDateTimeInTextView()
 
-        timePickerBuilder.addOnPositiveButtonClickListener {
-            val dateTime = viewModel.getUnlockTime()
-            viewModel.setDateTime(
-                LocalDateTime.of(
-                    dateTime.year,
-                    dateTime.monthValue,
-                    dateTime.dayOfMonth,
-                    timePickerBuilder.hour,
-                    timePickerBuilder.minute
-                )
-            )
-            setDateTimeInTextView()
-        }
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Select Unlock Date")
 
-        timePickerBuilder.show(supportFragmentManager, "TIME_PICKER")
-    }
-}
+        val timePicker = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_12H)
+            .setTitleText("Select Unlock Time")
 
-// Launch the file picker activity using Activity Result API
-private fun launchFilePicker() {
-    val startForResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == RESULT_OK) {
-                val intent = result.data
-                selectedFile =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        intent!!.getSerializableExtra("result", File::class.java)!!
-                    } else {
-                        intent!!.getSerializableExtra("result") as File
-                    }
-                viewModel.lockFile = selectedFile
-                setValues()
-            } else {
-                finish()
+        // Date picker click listener
+        bindings.dateLockFile.setOnClickListener {
+            val datePickerBuilder = datePicker.build()
+            datePickerBuilder.addOnPositiveButtonClickListener {
+                val dateTime = viewModel.getUnlockTime()
+                val selection = datePickerBuilder.selection
+
+                // TODO: Implement date lock file picker based on 'selection'
             }
+            datePickerBuilder.show(supportFragmentManager, "DATE_PICKER")
         }
 
-    startForResult.launch(Intent(this, FilePickerActivity::class.java))
-}
+        // Time picker click listener
+        bindings.timeLockFile.setOnClickListener {
+            timePicker.setHour(viewModel.getUnlockTime().hour)
+            timePicker.setMinute(viewModel.getUnlockTime().minute)
+
+            val timePickerBuilder = timePicker.build()
+
+            timePickerBuilder.addOnPositiveButtonClickListener {
+                val dateTime = viewModel.getUnlockTime()
+                viewModel.setDateTime(
+                    LocalDateTime.of(
+                        dateTime.year,
+                        dateTime.monthValue,
+                        dateTime.dayOfMonth,
+                        timePickerBuilder.hour,
+                        timePickerBuilder.minute
+                    )
+                )
+                setDateTimeInTextView()
+            }
+
+            timePickerBuilder.show(supportFragmentManager, "TIME_PICKER")
+        }
+    }
+
+    // Launch the file picker activity using Activity Result API
+    private fun launchFilePicker() {
+        val startForResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                if (result.resultCode == RESULT_OK) {
+                    val intent = result.data
+                    selectedFile =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            intent!!.getSerializableExtra("result", File::class.java)!!
+                        } else {
+                            intent!!.getSerializableExtra("result") as File
+                        }
+                    viewModel.lockFile = selectedFile
+                    setValues()
+                } else {
+                    finish()
+                }
+            }
+
+        startForResult.launch(Intent(this, FilePickerActivity::class.java))
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
+    }
 }

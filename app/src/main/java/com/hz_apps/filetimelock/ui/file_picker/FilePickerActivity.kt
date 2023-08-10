@@ -16,6 +16,8 @@ class FilePickerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val bindings = ActivityFilePickerBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+
+        // back button press enabled
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         supportActionBar?.title = "Internal Storage"
@@ -32,7 +34,7 @@ class FilePickerActivity : AppCompatActivity() {
         //val files = getFilesAndFolders(path);
 
 
-        adapter = FileViewAdapter(this, viewModel )
+        adapter = FileViewAdapter(this, viewModel)
 
 
 
@@ -40,13 +42,14 @@ class FilePickerActivity : AppCompatActivity() {
 
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
+    override fun onSupportNavigateUp(): Boolean {
         if (adapter.getCurrentPath() == viewModel.path) {
-            super.onBackPressed()
+            onBackPressed()
+            return true
         } else {
             adapter.onBackPressed()
         }
+        return false
     }
 
 }
