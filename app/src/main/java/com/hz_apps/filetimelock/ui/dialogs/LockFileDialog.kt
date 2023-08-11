@@ -1,7 +1,9 @@
 package com.hz_apps.filetimelock.ui.dialogs
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -26,8 +28,9 @@ class LockFileDialog(
     private lateinit var bindings : DialogCopyFileBinding
     private lateinit var db : AppDB
     private lateinit var repository : DBRepository
-    private lateinit var destination : String
+    private lateinit var destination : File
     private var id : Int = 0
+    private lateinit var mainDialog : Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         bindings = DialogCopyFileBinding.inflate(layoutInflater)
@@ -41,17 +44,16 @@ class LockFileDialog(
         dialog.setView(bindings.root)
 
         dialog.setNegativeButton("Cancel") { _, _ ->
-            dismiss()
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
             copyAndSaveIntoDB(dialog)
         }
 
-
         dialog.setCancelable(false)
 
-        return dialog.create()
+        mainDialog = dialog.create()
+        return mainDialog
     }
 
     private suspend fun copyAndSaveIntoDB(dialog : AlertDialog.Builder) {
@@ -76,7 +78,7 @@ class LockFileDialog(
         id = try { repository.getLastId() + 1 }
         catch (e: Exception) {0}
         createFolder(requireContext(), "data")
-        destination = "data/data/${requireContext().packageName}/data/$id"
+        destination = File("data/data/${requireContext().packageName}/data/$id")
     }
 
     private suspend fun lockFile() {
@@ -85,7 +87,7 @@ class LockFileDialog(
             lockFile.name,
             LocalDateTime.now(),
             unlockTime,
-            destination,
+            destination.absolutePath,
             lockFile.length().toString(),
             getFileExtension(lockFile)
         )
@@ -94,11 +96,16 @@ class LockFileDialog(
     }
 
     private suspend fun copyFile() {
-        copyFile(lockFile, File(destination), bindings.copyFileProgressBar)
+        copyFile(lockFile, destination, bindings.copyFileProgressBar)
     }
 
     interface OnFileLockedDialogListener {
         fun onFileLocked()
         fun onFileLockedError()
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT).show()
+        super.onDismiss(dialog)
     }
 }

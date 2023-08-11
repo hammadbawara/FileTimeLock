@@ -13,6 +13,7 @@ class PermissionsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val bindings = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+        supportActionBar?.hide()
 
         val requestPermissionLauncher =
             registerForActivityResult(

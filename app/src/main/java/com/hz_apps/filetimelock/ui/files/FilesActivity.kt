@@ -1,6 +1,9 @@
 package com.hz_apps.filetimelock.ui.files
 
+import OnTimeAPIListener
+import TimeApiClient
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -27,17 +30,22 @@ import com.hz_apps.filetimelock.ui.lock_file.LockFileActivityDialog
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.time.LocalDateTime
 
-class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
+class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPIListener{
 
     private val viewModel = FilesViewModel()
     private lateinit var bindings : ActivityFilesBinding
     private var actionModeCallBack : ActionMode.Callback? = null
     private lateinit var adapter : LockedFileViewAdapter
     private lateinit var repository : DBRepository
+    private val timeApiClient by lazy { TimeApiClient(this, this) }
+    private var timeGetJob : Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
@@ -70,6 +78,20 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
                 }
             }
         }
+
+        bindings.timeGetBtn.setOnClickListener {
+            if (timeGetJob != null && timeGetJob!!.isActive) {
+                timeGetJob!!.cancel()
+                stopGettingTime()
+                Toast.makeText(this, "Time Get Cancelled", Toast.LENGTH_SHORT).show()
+            }
+            else if (timeGetJob == null) {
+                Toast.makeText(this, "Getting Time", Toast.LENGTH_SHORT).show()
+                checkTime()
+            }
+        }
+
+        checkTime()
     }
 
     private fun setRecyclerView(it : MutableList<LockFile>) {
@@ -135,6 +157,7 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
                 return true
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onDestroyActionMode(mode: ActionMode?) {
                 adapter.checkedItems.fill(false)
                 adapter.notifyDataSetChanged()
@@ -159,6 +182,31 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile{
                 }
                 adapter.notifyItemChanged(i)
             }
+        }
+    }
+
+    override fun onGetTime(dateTime: LocalDateTime) {
+        bindings.timeViewActivityFiles.text = dateTime.toString()
+    }
+
+    override fun onFailToGetTime(error: String) {
+        Toast.makeText(this, "Failed to get time. Make sure you are connected to internet", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun checkTime() {
+        bindings.timeProgressFilesActivity.visibility = View.VISIBLE
+        bindings.timeGetBtn.setImageResource(R.drawable.ic_cancel)
+        timeGetJob = CoroutineScope(Dispatchers.IO).launch {
+            timeApiClient.getCurrentTime()
+            stopGettingTime()
+        }
+    }
+
+    private fun stopGettingTime() {
+        timeGetJob = null
+        runOnUiThread{
+            bindings.timeGetBtn.setImageResource(R.drawable.ic_refresh)
+            bindings.timeProgressFilesActivity.visibility = View.GONE
         }
     }
 

@@ -33,12 +33,12 @@ fun calculateTimeDifference(lockDate: LocalDateTime, unlockDate: LocalDateTime):
     val duration = Duration.between(lockDate, unlockDate)
 
     return when {
-        duration.toDays() >= 365 -> "${duration.toDays() / 365} years"
-        duration.toDays() >= 30 -> "${duration.toDays() / 30} months"
-        duration.toDays() >= 7 -> "${duration.toDays() / 7} weeks"
-        duration.toDays() > 0 -> "${duration.toDays()} days"
-        duration.toHours() > 0 -> "${duration.toHours()} hours"
-        duration.toMinutes() > 0 -> "${duration.toMinutes()} minutes"
+        duration.toDays() >= 365 -> "${duration.toDays() / 365} yr"
+        duration.toDays() >= 30 -> "${duration.toDays() / 30} mo"
+        duration.toDays() >= 7 -> "${duration.toDays() / 7} wk"
+        duration.toDays() > 0 -> "${duration.toDays()} day"
+        duration.toHours() > 0 -> "${duration.toHours()} hr"
+        duration.toMinutes() > 0 -> "${duration.toMinutes()} min"
         else -> "Less than a minute"
     }
 }

@@ -74,4 +74,10 @@ dependencies {
     // Retrofit dependency
     def retrofit_version = "2.9.0"
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+
+    // lottie animation
+    implementation 'com.airbnb.android:lottie:6.1.0'
+
+    // Datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 }
