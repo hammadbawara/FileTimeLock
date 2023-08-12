@@ -31,7 +31,7 @@
             android:id="@+id/timeView_activity_files"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Fri, 11 Aug 2023   8:27AM"
+            android:padding="5dp"
             android:textSize="20sp"
             app:layout_constraintEnd_toStartOf="@+id/time_get_btn"
             app:layout_constraintStart_toStartOf="parent" />

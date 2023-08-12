@@ -4,6 +4,7 @@ import OnTimeAPIListener
 import TimeApiClient
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -18,6 +19,11 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.adapters.ClickListenerLockedFile
@@ -31,10 +37,13 @@ import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPIListener{
 
@@ -45,6 +54,10 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
     private lateinit var repository : DBRepository
     private val timeApiClient by lazy { TimeApiClient(this, this) }
     private var timeGetJob : Job? = null
+    private lateinit var timeNow : LocalDateTime
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+    private val timeKey = longPreferencesKey("current_time")
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,13 +82,15 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
             }
         }
 
-        // Getting data from database and setting in recyclerview
+        // Running Coroutine for getting files from database and time from datastore
         CoroutineScope(Dispatchers.IO).launch {
+            getTimeFromDataStore()
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
             launch(Dispatchers.Main) {
                 lockedFiles.observe(this@FilesActivity) {
                     setRecyclerView(it)
                 }
+                bindings.timeViewActivityFiles.text = timeNow.format(dateTimeFormatter)
             }
         }
 
@@ -186,7 +201,11 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
     }
 
     override fun onGetTime(dateTime: LocalDateTime) {
-        bindings.timeViewActivityFiles.text = dateTime.toString()
+        timeNow = dateTime
+        bindings.timeViewActivityFiles.text = timeNow.format(dateTimeFormatter)
+        CoroutineScope(Dispatchers.IO).launch {
+            writeTimeInDataStore(timeNow.toEpochSecond(ZonedDateTime.now().offset))
+        }
     }
 
     override fun onFailToGetTime(error: String) {
@@ -207,6 +226,23 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
         runOnUiThread{
             bindings.timeGetBtn.setImageResource(R.drawable.ic_refresh)
             bindings.timeProgressFilesActivity.visibility = View.GONE
+        }
+    }
+
+    private suspend fun writeTimeInDataStore(dateTimeInEpoch : Long) {
+        dataStore.edit {settings->
+            settings[timeKey] = dateTimeInEpoch
+        }
+    }
+
+    private suspend fun getTimeFromDataStore() {
+        timeNow = LocalDateTime.now()
+        // if it give error mean dateTime is not saved yet
+        try{
+            val timeInEpochSec = dataStore.data.first()[timeKey]!!
+            timeNow = LocalDateTime.ofEpochSecond(timeInEpochSec, 0, ZonedDateTime.now().offset)
+        }catch (_: Exception) {
+
         }
     }
 

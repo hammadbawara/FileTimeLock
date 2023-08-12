@@ -2,6 +2,8 @@ import android.app.Activity
 import org.json.JSONObject
 import java.net.URL
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class TimeApiClient (
                 private val activity: Activity,
@@ -20,7 +22,10 @@ class TimeApiClient (
             val hour = jsonData.getInt("hour")
             val minute = jsonData.getInt("minute")
             val seconds = jsonData.getInt("seconds")
-            val dateTime = LocalDateTime.of(year, month, day, hour, minute, seconds)
+
+            val zonedDateTime = ZonedDateTime.of(year, month, day, hour, minute, seconds, 0, ZoneId.of("UTC"))
+            val dateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
+
             activity.runOnUiThread {
                 onTimeAPIListener.onGetTime(dateTime)
             }
