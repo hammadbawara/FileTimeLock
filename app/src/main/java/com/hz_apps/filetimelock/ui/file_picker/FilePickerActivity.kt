@@ -26,7 +26,7 @@ class FilePickerActivity : AppCompatActivity() {
             super.onBackPressed()
         }
 
-        bindings.selectCancelFilePicker.visibility = View.GONE;
+        bindings.selectCancelFilePicker.visibility = View.GONE
 
 
         // ask user for storage permission
@@ -42,9 +42,14 @@ class FilePickerActivity : AppCompatActivity() {
 
     }
 
+    @Deprecated("Deprecated in Java", ReplaceWith("onSupportNavigateUp()"))
+    override fun onBackPressed() {
+        onSupportNavigateUp()
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         if (adapter.getCurrentPath() == viewModel.path) {
-            onBackPressed()
+            onSupportNavigateUp()
             return true
         } else {
             adapter.onBackPressed()
