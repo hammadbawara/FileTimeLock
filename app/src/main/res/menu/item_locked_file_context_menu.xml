@@ -9,11 +9,10 @@
         android:title="Delete" />
 
     <item
-        android:id="@+id/checkbox"
-        android:checkable="true"
+        android:id="@+id/select_all_files_action"
         android:checked="false"
+        android:icon="@drawable/ic_check"
         android:title="Select All"
-        app:actionViewClass="android.widget.CheckBox"
         app:showAsAction="always" />
 
 

@@ -76,7 +76,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         // Running Coroutine for getting files from database and time from datastore
         CoroutineScope(Dispatchers.IO).launch {
             // Getting time from dataStore
-            getTimeFromDataStore()
+            getTimeFromSharedPrefs()
             // Getting files from database
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
 
@@ -116,6 +116,9 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         bindings.lockedFilesRecyclerview.adapter = adapter
     }
 
+    /*
+      * RecyclerView items click actions
+     */
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionMode == null) {
             val file = File(adapter.lockedFilesList[position].path)
@@ -158,12 +161,6 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         return true
     }
 
-    override fun onFileUnlocked(position: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
-
-        }
-    }
-
     private fun startActionMode() {
         val actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
@@ -175,6 +172,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 return true
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                 if (item != null) {
                     if (item.title == "Delete") {
@@ -189,8 +187,16 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                         dialog.setNegativeButton("No") { _, _ -> }
                         dialog.show()
                     } else if (item.title == "Select All") {
-                        Toast.makeText(this@FilesActivity, "Delete", Toast.LENGTH_SHORT).show()
-                        TODO()
+                        if (viewModel.numOfSelectedItems == adapter.lockedFilesList.size) {
+                            adapter.checkedItems.fill(false)
+                            viewModel.numOfSelectedItems = 0
+                            adapter.notifyDataSetChanged()
+                        } else {
+                            adapter.checkedItems.fill(true)
+                            viewModel.numOfSelectedItems = adapter.lockedFilesList.size
+                            adapter.notifyDataSetChanged()
+                        }
+                        actionMode?.title = "${viewModel.numOfSelectedItems} selected"
                     }
                 }
                 return true
@@ -202,10 +208,13 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 adapter.notifyDataSetChanged()
                 actionMode = null
                 bindings.floatingBtnFilesActivity.visibility = View.VISIBLE
+                viewModel.numOfSelectedItems = 0
             }
         }
+
         actionMode = startSupportActionMode(actionModeCallBack as ActionMode.Callback)
         bindings.floatingBtnFilesActivity.visibility = View.INVISIBLE
+
     }
 
     fun deleteSelectedItems() {
@@ -224,19 +233,30 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         }
     }
 
+    override fun onFileUnlocked(position: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+        }
+    }
+
+    /*
+     * Listeners from TimeApiClient
+     */
     override fun onGetTime(dateTime: LocalDateTime) {
         viewModel.timeNow = dateTime
         bindings.timeViewActivityFiles.text = dateTime.format(dateTimeFormatter)
         adapter.updateTimeNow(dateTime)
         CoroutineScope(Dispatchers.IO).launch {
-            writeTimeInDataStore(dateTime.toEpochSecond(ZonedDateTime.now().offset))
+            (dateTime.toEpochSecond(ZonedDateTime.now().offset))
         }
     }
-
     override fun onFailToGetTime(error: String) {
         Toast.makeText(this, "Failed to get time. Make sure you are connected to internet", Toast.LENGTH_SHORT).show()
     }
 
+    /*
+      * Time getting from server buttons
+     */
     private fun checkTime() {
         bindings.timeProgressFilesActivity.visibility = View.VISIBLE
         bindings.timeGetBtn.setImageResource(R.drawable.ic_cancel)
@@ -252,14 +272,18 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             bindings.timeGetBtn.setImageResource(R.drawable.ic_refresh)
             bindings.timeProgressFilesActivity.visibility = View.GONE
         }
+        storeTimeInSharedPrefs(viewModel.timeNow!!.toEpochSecond(ZonedDateTime.now().offset))
     }
 
-    private fun writeTimeInDataStore(dateTimeInEpoch : Long) {
+    /*
+      * Time store in shared preferences
+     */
+    private fun storeTimeInSharedPrefs(dateTimeInEpoch : Long) {
         val preferences = getSharedPreferences("time", Context.MODE_PRIVATE)
         preferences.edit().putLong("time", dateTimeInEpoch).apply()
     }
 
-    private fun getTimeFromDataStore() {
+    private fun getTimeFromSharedPrefs() {
         if (viewModel.timeNow == null) {
             viewModel.timeNow = LocalDateTime.now()
             // if it give error mean dateTime is not saved yet
