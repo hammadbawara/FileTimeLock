@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
+import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 
@@ -40,24 +41,23 @@ class FileViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.fileName.text = files[position].name
-
         val currentFile = files[position]
+        holder.fileName.text = currentFile.name
 
         if (currentFile.isDirectory) {
             holder.fileIcon.setImageResource(R.drawable.ic_folder)
 //            holder.noOfItems.visibility = View.VISIBLE
 //            holder.noOfItems.text = "${currentFile.length()} items"
         }else{
-            setFileIcon(holder.itemView.context, holder.fileIcon, files[position])
+            setFileIcon(holder.itemView.context, holder.fileIcon, currentFile, getFileExtension(currentFile))
         }
 
         holder.itemView.setOnClickListener {
-            if (files[position].isDirectory) {
+            if (currentFile.isDirectory) {
                 viewModel.file = currentFile
                 updateFiles()
             }
-            else if (files[position].isFile) {
+            else if (currentFile.isFile) {
                 val intent = Intent()
                 intent.putExtra("result", currentFile)
                 activity.setResult(Activity.RESULT_OK, intent)

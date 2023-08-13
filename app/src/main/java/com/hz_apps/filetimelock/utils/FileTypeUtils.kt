@@ -34,11 +34,9 @@ fun getFileIcon(extension : String) : Int {
     }
     return resource
 }
-fun setFileIcon(context: Context, imageView: ImageView, file: File) {
-    val extension = getFileExtension(file)
 
+fun setFileIcon(context: Context, imageView: ImageView, file: File, extension : String) {
     val resource = getFileIcon(extension)
-
     if (resource == R.drawable.ic_image || resource == R.drawable.ic_video) {
         Glide.with(context)
             .load(file)

@@ -14,6 +14,7 @@ import com.hz_apps.filetimelock.databinding.ActivityLockFileBinding
 import com.hz_apps.filetimelock.ui.dialogs.LockFileDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.utils.getDateInFormat
+import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
@@ -53,8 +54,9 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
     // Set file information and date-time listeners
     private fun setValues() {
         val fileView = bindings.fileViewLockFile
-        fileView.nameFileView.text = viewModel.lockFile?.name ?: "No file selected"
-        setFileIcon(this, fileView.iconFileView, viewModel.lockFile!!)
+        val lockFile = viewModel.lockFile!!
+        fileView.nameFileView.text = lockFile.name
+        setFileIcon(this, fileView.iconFileView, lockFile, getFileExtension(lockFile))
 
         setDateTimeInTextView()
 

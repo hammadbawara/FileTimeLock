@@ -4,41 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?selectableItemBackground">
+    android:background="?selectableItemBackground"
+    android:padding="8dp">
 
     <ImageView
         android:id="@+id/icon_file_view"
-        android:layout_width="60dp"
+        android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginTop="5dp"
         android:outlineProvider="bounds"
+        app:layout_constraintBottom_toBottomOf="@+id/name_file_view"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/name_file_view"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
         android:id="@+id/name_file_view"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
         android:gravity="center_vertical"
-        android:padding="5dp"
         android:text="TextView"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/icon_file_view"
-        app:layout_constraintEnd_toStartOf="@+id/no_of_items_file_view"
-        app:layout_constraintStart_toEndOf="@+id/icon_file_view"
-        app:layout_constraintTop_toTopOf="@+id/icon_file_view" />
-
-    <View
-        android:id="@+id/view2"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="5dp"
-        android:background="#B8B8B8"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_file_view" />
+        app:layout_constraintStart_toEndOf="@+id/icon_file_view"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/no_of_items_file_view"
@@ -47,7 +38,6 @@
         android:gravity="bottom"
         android:text="1 item"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

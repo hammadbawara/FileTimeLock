@@ -256,6 +256,9 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         CoroutineScope(Dispatchers.IO).launch {
             repository.setFileUnlocked(id)
             adapter.lockedFilesList[position].isUnlocked = true
+            runOnUiThread {
+                adapter.notifyItemChanged(position)
+            }
         }
     }
 

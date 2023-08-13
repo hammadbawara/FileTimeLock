@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.utils.setFileIcon
+import java.io.File
 import java.time.LocalDateTime
 
 
@@ -43,16 +44,12 @@ class LockedFileViewAdapter (
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.remainingTime.visibility = View.INVISIBLE
         val file = lockedFilesList[position]
-
-        setFileIcon(holder.imageView, file.extension)
         holder.name.text = file.name
 
-
-
         if (file.isUnlocked) {
-
+            holder.remainingTimeLayout.visibility = View.INVISIBLE
+            setFileIcon(holder.imageView.context, holder.imageView, File(file.path), file.extension)
         }else{
             file.calculateRemainingTime(dateNow)
             if (file.remainingTime == "unlocked") {
@@ -60,6 +57,7 @@ class LockedFileViewAdapter (
             }else{
                 holder.remainingTimeLayout.visibility = View.VISIBLE
                 holder.remainingTime.text = file.remainingTime
+                setFileIcon(holder.imageView, file.extension)
             }
         }
 
