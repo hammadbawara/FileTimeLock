@@ -138,7 +138,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 Toast.makeText(this@FilesActivity, "This file is not unlocked yet", Toast.LENGTH_SHORT).show()
             }
         }else {
-            onItemSelected(position)
+            onItemSelected(itemView, position)
         }
     }
 
@@ -152,7 +152,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         startActivity(intent)
     }
 
-    private fun onItemSelected(position: Int) {
+    private fun onItemSelected(itemView: View, position: Int) {
         if (adapter.checkedItems[position]) {
             adapter.checkedItems[position] = false
             viewModel.numOfSelectedItems--
@@ -161,7 +161,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             adapter.checkedItems[position] = true
             viewModel.numOfSelectedItems++
         }
-        adapter.notifyItemChanged(position)
+        adapter.setItemBackground(itemView, position)
 
         if (viewModel.numOfSelectedItems == 0) {
             actionMode?.finish()
@@ -173,9 +173,9 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     override fun onItemLongClicked(itemView: View, position: Int): Boolean {
         if (actionMode == null) {
             startActionMode()
-            onItemSelected(position)
+            onItemSelected(itemView, position)
         } else{
-            onItemSelected(position)
+            onItemSelected(itemView, position)
         }
         return true
     }
@@ -247,7 +247,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 runBlocking {
                     job.join()
                 }
-                adapter.notifyItemChanged(i)
+                adapter.notifyItemRemoved(i)
             }
         }
     }

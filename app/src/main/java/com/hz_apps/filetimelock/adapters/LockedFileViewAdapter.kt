@@ -86,6 +86,12 @@ class LockedFileViewAdapter (
     private fun setItemBackgroundUnselected(item : View) {
         item.setBackgroundColor(Color.TRANSPARENT)
     }
+    fun setItemBackground(itemView: View, position : Int){
+        if (checkedItems[position])
+            setItemBackgroundSelected(itemView)
+        else
+            setItemBackgroundUnselected(itemView)
+    }
 }
 
 interface LockFileListeners {
