@@ -19,13 +19,21 @@ import java.time.LocalDateTime
 class LockedFileViewAdapter (
     private val activity : Activity,
     val lockedFilesList : List<LockFile>,
-    private val clickListenerLockedFile: ClickListenerLockedFile
+    private val lockFileListeners: LockFileListeners,
+    private var timeNow : LocalDateTime
 ) : RecyclerView.Adapter<LockedFileViewAdapter.ViewHolder>(){
+
+    fun updateTimeNow(timeNow: LocalDateTime) {
+        this.timeNow = timeNow
+        for (i in lockedFilesList.indices) {
+            if (!lockedFilesList[i].isUnlocked) {
+                notifyItemChanged(i)
+            }
+        }
+    }
 
     private var actionMode : ActionMode.Callback? = null
     val checkedItems : MutableList<Boolean> = MutableList(lockedFilesList.size){false}
-
-    private var timeNow : LocalDateTime = LocalDateTime.now()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).
         inflate(R.layout.item_locked_file, parent, false)
@@ -39,7 +47,18 @@ class LockedFileViewAdapter (
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         setFileIcon(holder.imageView, lockedFilesList[position].extension)
         holder.name.text = lockedFilesList[position].name
-        holder.remainingTime.text = calculateTimeDifference(timeNow, lockedFilesList[position].unlockTime)
+
+        if (lockedFilesList[position].isUnlocked){
+
+        }else{
+            val time =  calculateTimeDifference(timeNow, lockedFilesList[position].unlockTime)
+            if (time == "unlocked"){
+                lockFileListeners.onFileUnlocked(position)
+            }else{
+                holder.remainingTime.text = time
+            }
+        }
+
 
         if (checkedItems[position])
             setItemBackgroundSelected(holder.itemView)
@@ -47,10 +66,10 @@ class LockedFileViewAdapter (
             setItemBackgroundUnselected(holder.itemView)
 
         holder.itemView.setOnLongClickListener {
-            clickListenerLockedFile.onItemLongClicked(holder.itemView, position)
+            lockFileListeners.onItemLongClicked(holder.itemView, position)
         }
         holder.itemView.setOnClickListener {
-            clickListenerLockedFile.onItemClicked(holder.itemView, position)
+            lockFileListeners.onItemClicked(holder.itemView, position)
         }
     }
 
@@ -81,9 +100,10 @@ class LockedFileViewAdapter (
     }
 }
 
-interface ClickListenerLockedFile {
+interface LockFileListeners {
     fun onItemClicked(itemView : View, position: Int)
     fun onItemLongClicked(itemView : View, position: Int) : Boolean
+    fun onFileUnlocked(position: Int)
 }
 
 

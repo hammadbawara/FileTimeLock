@@ -19,7 +19,7 @@ import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 import java.time.LocalDateTime
 
-class LockFileActivityDialog : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
+class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
 
     private lateinit var selectedFile: File
     private val viewModel: LockFileViewModel by viewModels()

@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.hz_apps.filetimelock.databinding.ActivityPermissionsBinding
-import com.hz_apps.filetimelock.ui.lock_file.LockFileActivityDialog
+import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 
 class PermissionsActivity : AppCompatActivity() {
 
@@ -20,7 +20,7 @@ class PermissionsActivity : AppCompatActivity() {
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    val intent = Intent(this, LockFileActivityDialog::class.java)
+                    val intent = Intent(this, LockFileActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {

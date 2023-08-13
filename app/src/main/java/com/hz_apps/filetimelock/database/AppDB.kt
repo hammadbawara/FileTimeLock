@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 
-@Database(entities = [LockFile::class], version = 3, exportSchema = false)
+@Database(entities = [LockFile::class], version = 5, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDB : RoomDatabase() {
     abstract fun lockFileDao() : LockFileDao

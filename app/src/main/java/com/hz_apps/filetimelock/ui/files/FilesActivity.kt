@@ -19,25 +19,20 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.R
-import com.hz_apps.filetimelock.adapters.ClickListenerLockedFile
+import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
-import com.hz_apps.filetimelock.ui.lock_file.LockFileActivityDialog
+import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -45,7 +40,7 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPIListener{
+class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
     private val viewModel = FilesViewModel()
     private lateinit var bindings : ActivityFilesBinding
@@ -54,8 +49,6 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
     private lateinit var repository : DBRepository
     private val timeApiClient by lazy { TimeApiClient(this, this) }
     private var timeGetJob : Job? = null
-    private lateinit var timeNow : LocalDateTime
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     private val timeKey = longPreferencesKey("current_time")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
 
@@ -74,7 +67,7 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
                 this,
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(this, LockFileActivityDialog::class.java)
+                val intent = Intent(this, LockFileActivity::class.java)
                 startActivity(intent)
             }else{
                 val intent = Intent(this, PermissionsActivity::class.java)
@@ -84,29 +77,35 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
 
         // Running Coroutine for getting files from database and time from datastore
         CoroutineScope(Dispatchers.IO).launch {
+            // Getting time from dataStore
             getTimeFromDataStore()
+            // Getting files from database
             val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
+
+            // Running Main thread tasks
             launch(Dispatchers.Main) {
+                // observer on locked files
                 lockedFiles.observe(this@FilesActivity) {
                     setRecyclerView(it)
                 }
-                bindings.timeViewActivityFiles.text = timeNow.format(dateTimeFormatter)
-            }
-        }
-
-        bindings.timeGetBtn.setOnClickListener {
-            if (timeGetJob != null && timeGetJob!!.isActive) {
-                timeGetJob!!.cancel()
-                stopGettingTime()
-                Toast.makeText(this, "Time Get Cancelled", Toast.LENGTH_SHORT).show()
-            }
-            else if (timeGetJob == null) {
-                Toast.makeText(this, "Getting Time", Toast.LENGTH_SHORT).show()
+                // Settings date on textView
+                bindings.timeViewActivityFiles.text = viewModel.timeNow?.format(dateTimeFormatter)
+                // Time Get Button
+                bindings.timeGetBtn.setOnClickListener {
+                    if (timeGetJob != null && timeGetJob!!.isActive) {
+                        timeGetJob!!.cancel()
+                        stopGettingTime()
+                        Toast.makeText(this@FilesActivity, "Time Get Cancelled", Toast.LENGTH_SHORT).show()
+                    }
+                    else if (timeGetJob == null) {
+                        Toast.makeText(this@FilesActivity, "Getting Time", Toast.LENGTH_SHORT).show()
+                        checkTime()
+                    }
+                }
+                // Checking time from internet
                 checkTime()
             }
         }
-
-        checkTime()
     }
 
     private fun setRecyclerView(it : MutableList<LockFile>) {
@@ -115,7 +114,7 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
         }else{
             if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
         }
-        adapter = LockedFileViewAdapter(this, it, this)
+        adapter = LockedFileViewAdapter(this, it, this, viewModel.timeNow!!)
         bindings.lockedFilesRecyclerview.adapter = adapter
     }
 
@@ -140,6 +139,13 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
         adapter.notifyItemChanged(position)
         return true
     }
+
+    override fun onFileUnlocked(position: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+        }
+    }
+
     private fun startActionMode() {
         actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
@@ -201,10 +207,11 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
     }
 
     override fun onGetTime(dateTime: LocalDateTime) {
-        timeNow = dateTime
-        bindings.timeViewActivityFiles.text = timeNow.format(dateTimeFormatter)
+        viewModel.timeNow = dateTime
+        bindings.timeViewActivityFiles.text = dateTime.format(dateTimeFormatter)
+        adapter.updateTimeNow(dateTime)
         CoroutineScope(Dispatchers.IO).launch {
-            writeTimeInDataStore(timeNow.toEpochSecond(ZonedDateTime.now().offset))
+            writeTimeInDataStore(dateTime.toEpochSecond(ZonedDateTime.now().offset))
         }
     }
 
@@ -229,20 +236,20 @@ class FilesActivity : AppCompatActivity(), ClickListenerLockedFile, OnTimeAPILis
         }
     }
 
-    private suspend fun writeTimeInDataStore(dateTimeInEpoch : Long) {
-        dataStore.edit {settings->
-            settings[timeKey] = dateTimeInEpoch
-        }
+    private fun writeTimeInDataStore(dateTimeInEpoch : Long) {
+        val preferences = getSharedPreferences("time", Context.MODE_PRIVATE)
+        preferences.edit().putLong("time", dateTimeInEpoch).apply()
     }
 
-    private suspend fun getTimeFromDataStore() {
-        timeNow = LocalDateTime.now()
-        // if it give error mean dateTime is not saved yet
-        try{
-            val timeInEpochSec = dataStore.data.first()[timeKey]!!
-            timeNow = LocalDateTime.ofEpochSecond(timeInEpochSec, 0, ZonedDateTime.now().offset)
-        }catch (_: Exception) {
-
+    private fun getTimeFromDataStore() {
+        if (viewModel.timeNow == null) {
+            viewModel.timeNow = LocalDateTime.now()
+            // if it give error mean dateTime is not saved yet
+            val preferences = getSharedPreferences("time", Context.MODE_PRIVATE)
+            val time = preferences.getLong("time", 0)
+            if (time != 0L) {
+                viewModel.timeNow = LocalDateTime.ofEpochSecond(time, 0, ZonedDateTime.now().offset)
+            }
         }
     }
 

@@ -89,7 +89,8 @@ class LockFileDialog(
             unlockTime,
             destination.absolutePath,
             lockFile.length().toString(),
-            getFileExtension(lockFile)
+            getFileExtension(lockFile),
+            false
         )
 
         repository.insertLockFile(file)

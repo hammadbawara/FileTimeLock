@@ -12,6 +12,7 @@ data class LockFile (
     val unlockTime : LocalDateTime,
     val path: String,
     val size : String,
-    val extension: String
+    val extension: String,
+    val isUnlocked: Boolean
 ) {
 }
