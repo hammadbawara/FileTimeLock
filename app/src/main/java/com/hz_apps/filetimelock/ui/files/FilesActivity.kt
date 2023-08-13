@@ -19,7 +19,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.lifecycle.distinctUntilChanged
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.adapters.LockFileListeners
@@ -44,12 +43,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
     private val viewModel = FilesViewModel()
     private lateinit var bindings : ActivityFilesBinding
-    private var actionModeCallBack : ActionMode.Callback? = null
+    private var actionMode : ActionMode? = null
     private lateinit var adapter : LockedFileViewAdapter
     private lateinit var repository : DBRepository
     private val timeApiClient by lazy { TimeApiClient(this, this) }
     private var timeGetJob : Job? = null
-    private val timeKey = longPreferencesKey("current_time")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,7 +117,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     }
 
     override fun onItemClicked(itemView: View, position: Int) {
-        if (actionModeCallBack == null) {
+        if (actionMode == null) {
             val file = File(adapter.lockedFilesList[position].path)
             val contentUri = FileProvider.getUriForFile(this, "com.hz_apps.filetimelock.FileProvider", file)
             val intent = Intent(Intent.ACTION_VIEW)
@@ -128,15 +126,35 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             startActivity(intent)
         }else {
-            adapter.checkedItems[position] = !adapter.checkedItems[position]
-            adapter.notifyItemChanged(position)
+            onItemSelected(position)
+        }
+    }
+
+    private fun onItemSelected(position: Int) {
+        if (adapter.checkedItems[position]) {
+            adapter.checkedItems[position] = false
+            viewModel.numOfSelectedItems--
+        }
+        else{
+            adapter.checkedItems[position] = true
+            viewModel.numOfSelectedItems++
+        }
+        adapter.notifyItemChanged(position)
+
+        if (viewModel.numOfSelectedItems == 0) {
+            actionMode?.finish()
+        } else{
+            actionMode?.title = "${viewModel.numOfSelectedItems} selected"
         }
     }
 
     override fun onItemLongClicked(itemView: View, position: Int): Boolean {
-        if (actionModeCallBack == null) startActionMode()
-        adapter.checkedItems[position] = !adapter.checkedItems[position]
-        adapter.notifyItemChanged(position)
+        if (actionMode == null) {
+            startActionMode()
+            onItemSelected(position)
+        } else{
+            onItemSelected(position)
+        }
         return true
     }
 
@@ -147,7 +165,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     }
 
     private fun startActionMode() {
-        actionModeCallBack = object : ActionMode.Callback {
+        val actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
                 menuInflater.inflate(R.menu.item_locked_file_context_menu, menu)
                 return true
@@ -182,11 +200,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             override fun onDestroyActionMode(mode: ActionMode?) {
                 adapter.checkedItems.fill(false)
                 adapter.notifyDataSetChanged()
-                actionModeCallBack = null
+                actionMode = null
                 bindings.floatingBtnFilesActivity.visibility = View.VISIBLE
             }
         }
-        startSupportActionMode(actionModeCallBack as ActionMode.Callback)
+        actionMode = startSupportActionMode(actionModeCallBack as ActionMode.Callback)
         bindings.floatingBtnFilesActivity.visibility = View.INVISIBLE
     }
 

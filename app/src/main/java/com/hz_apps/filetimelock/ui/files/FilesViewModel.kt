@@ -10,6 +10,8 @@ class FilesViewModel () : ViewModel() {
 
     var timeNow : LocalDateTime? = null
 
+    var numOfSelectedItems = 0
+
     fun getLockedFiles(repository : DBRepository) : LiveData<MutableList<LockFile>>{
         return repository.getAllLockFiles()
     }
