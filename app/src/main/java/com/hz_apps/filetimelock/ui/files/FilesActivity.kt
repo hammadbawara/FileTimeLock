@@ -51,7 +51,6 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private var dateGetJob : Job? = null
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
@@ -75,10 +74,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             }
         }
 
+        getSharedPrefs()
+
         // Running Coroutine for getting files from database and time from datastore
         CoroutineScope(Dispatchers.IO).launch {
             // Getting time from dataStore
-            getSharedPrefs()
 
             getItemFromDBAndSetInRV()
 
@@ -307,13 +307,13 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         if (viewModel.timeNow == null) {
             viewModel.timeNow = LocalDateTime.now()
             // if it give error mean dateTime is not saved yet
-            val preferences = getSharedPreferences("time", Context.MODE_PRIVATE)
+            val preferences = getSharedPreferences("FILES_ACTIVITY", Context.MODE_PRIVATE)
             val time = preferences.getLong("time", 0)
             if (time != 0L) {
                 viewModel.timeNow = LocalDateTime.ofEpochSecond(time, 0, ZonedDateTime.now().offset)
             }
 
-            val sortType = preferences.getString("sort_by", "NAME")!!
+            val sortType = preferences.getString("sort_by", "LOCK_DATE")!!
             viewModel.sortBy = FileSort.valueOf(sortType)
             viewModel.isAscending = preferences.getBoolean("is_ascending", true)
         }
@@ -321,6 +321,19 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.files_activity_menu, menu)
+        when (viewModel.sortBy) {
+            FileSort.NAME -> menu?.findItem(R.id.sort_by_name_files_activity)?.isChecked = true
+            FileSort.SIZE -> menu?.findItem(R.id.sort_by_size_files_activity)?.isChecked = true
+            FileSort.LOCK_DATE -> menu?.findItem(R.id.sort_by_lock_date_files_activity)?.isChecked = true
+            FileSort.UNLOCK_DATE -> menu?.findItem(R.id.sort_by_unlock_date_files_activity)?.isChecked = true
+            else -> {
+            }
+        }
+        if (viewModel.isAscending) {
+            menu?.findItem(R.id.sort_by_ascending_files_activity)?.isChecked = true
+        }else{
+            menu?.findItem(R.id.sort_by_descending_files_activity)?.isChecked = true
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -333,36 +346,49 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        item.isChecked = true
-        when (item.title) {
-            "Name" -> {
-                viewModel.sortBy = FileSort.NAME
-                CoroutineScope(Dispatchers.IO).launch {
-                    getItemFromDBAndSetInRV()
-                }
+        when (item.itemId) {
+            R.id.sort_by_name_files_activity -> {
+                handleSortAction(item, FileSort.NAME)
             }
-            "Size" -> {
-                viewModel.sortBy = FileSort.SIZE
-                CoroutineScope(Dispatchers.IO).launch {
-                    getItemFromDBAndSetInRV()
-                }
+            R.id.sort_by_size_files_activity -> {
+                handleSortAction(item, FileSort.SIZE)
             }
-            "Lock Date" -> {
-                viewModel.sortBy = FileSort.LOCK_DATE
-                CoroutineScope(Dispatchers.IO).launch {
-                    getItemFromDBAndSetInRV()
-                }
+            R.id.sort_by_lock_date_files_activity -> {
+                handleSortAction(item, FileSort.LOCK_DATE)
             }
-            "Unlock Date" -> {
-                viewModel.sortBy = FileSort.UNLOCK_DATE
-                CoroutineScope(Dispatchers.IO).launch {
-                    getItemFromDBAndSetInRV()
-                }
+            R.id.sort_by_unlock_date_files_activity -> {
+                handleSortAction(item, FileSort.UNLOCK_DATE)
+            }
+            R.id.sort_by_ascending_files_activity -> {
+                handleOrderAction(item, true)
+            }
+            R.id.sort_by_descending_files_activity -> {
+                handleOrderAction(item, false)
             }
         }
-
-        saveStoredPref()
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun handleSortAction(item : MenuItem, sortBy: FileSort) {
+        if (viewModel.sortBy != sortBy) {
+            viewModel.sortBy = sortBy
+            item.isChecked = true
+            CoroutineScope(Dispatchers.IO).launch {
+                getItemFromDBAndSetInRV()
+                saveStoredPref()
+            }
+        }
+    }
+
+    private fun handleOrderAction(item : MenuItem, isAscending: Boolean) {
+        if (viewModel.isAscending != isAscending) {
+            viewModel.isAscending = isAscending
+            item.isChecked = true
+            CoroutineScope(Dispatchers.IO).launch {
+                getItemFromDBAndSetInRV()
+                saveStoredPref()
+            }
+        }
     }
 
 }

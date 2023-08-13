@@ -17,6 +17,6 @@ class FilesViewModel () : ViewModel() {
     var numOfSelectedItems = 0
 
     fun getLockedFiles(repository : DBRepository) : LiveData<MutableList<LockFile>>{
-        return repository.getAllLockFiles(sortBy)
+        return repository.getAllLockFiles(sortBy, isAscending)
     }
 }

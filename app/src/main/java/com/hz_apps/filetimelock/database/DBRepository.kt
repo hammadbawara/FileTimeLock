@@ -8,16 +8,15 @@ class DBRepository(
     private val lockFileDao: LockFileDao
 ) {
 
-    fun getAllLockFiles(sortBy: FileSort): LiveData<MutableList<LockFile>> {
+    fun getAllLockFiles(sortBy: FileSort, isAscending : Boolean): LiveData<MutableList<LockFile>> {
         return when (sortBy) {
-            FileSort.NAME -> lockFileDao.getAllByFileName()
-            FileSort.NAME_DESC -> lockFileDao.getAllByFileNameDesc()
-            FileSort.SIZE -> lockFileDao.getAllByFileSize()
-            FileSort.SIZE_DESC -> lockFileDao.getAllByFileSizeDesc()
-            FileSort.LOCK_DATE -> lockFileDao.getAllByLockDate()
-            FileSort.LOCK_DATE_DESC -> lockFileDao.getAllByLockDateDesc()
-            FileSort.UNLOCK_DATE -> lockFileDao.getAllByUnlockDate()
-            FileSort.UNLOCK_DATE_DESC -> lockFileDao.getAllByUnlockDateDesc()
+            FileSort.NAME -> if (isAscending) lockFileDao.getAllByFileName() else lockFileDao.getAllByFileNameDesc()
+            FileSort.SIZE -> if (isAscending) lockFileDao.getAllByFileSize() else lockFileDao.getAllByFileSizeDesc()
+            FileSort.LOCK_DATE -> if (isAscending) lockFileDao.getAllByLockDate() else lockFileDao.getAllByLockDateDesc()
+            FileSort.UNLOCK_DATE -> if (isAscending) lockFileDao.getAllByUnlockDate() else lockFileDao.getAllByUnlockDateDesc()
+            else -> {
+                if (isAscending) lockFileDao.getAllByFileName() else lockFileDao.getAllByFileNameDesc()
+            }
         }
     }
 

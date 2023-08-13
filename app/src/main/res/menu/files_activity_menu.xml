@@ -12,32 +12,46 @@
                 android:layout_height="match_parent"
                 android:checkableBehavior="single">
                 <item
+                    android:id="@+id/sort_by_name_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Name" />
                 <item
+                    android:id="@+id/sort_by_size_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Size" />
                 <item
+                    android:id="@+id/sort_by_lock_date_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Lock Date" />
                 <item
+                    android:id="@+id/sort_by_unlock_date_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Unlock Date" />
             </group>
+        </menu>
+    </item>
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Order" >
+        <menu
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
             <group
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:checkableBehavior="single"
-                android:divider="?android:listDivider">
+                android:checkableBehavior="single">
                 <item
+                    android:id="@+id/sort_by_ascending_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Ascending" />
                 <item
+                    android:id="@+id/sort_by_descending_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:title="Descending" />
@@ -45,6 +59,7 @@
         </menu>
     </item>
     <item
+        android:id="@+id/about_files_activity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="About" />

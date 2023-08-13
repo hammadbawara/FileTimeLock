@@ -88,7 +88,7 @@ class LockFileDialog(
             LocalDateTime.now(),
             unlockTime,
             destination.absolutePath,
-            lockFile.length().toString(),
+            lockFile.length(),
             getFileExtension(lockFile),
             false,
         )
