@@ -26,6 +26,7 @@ import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
+import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.utils.FileSort
@@ -133,7 +134,8 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionMode == null) {
             if (adapter.lockedFilesList[position].isUnlocked) {
-                openFile(position)
+                val fileViewDialog = LockFileViewDialog(adapter.lockedFilesList[position])
+                fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
             }else{
                 Toast.makeText(this@FilesActivity, "This file is not unlocked yet", Toast.LENGTH_SHORT).show()
             }
