@@ -90,7 +90,7 @@ class LockFileDialog(
             destination.absolutePath,
             lockFile.length().toString(),
             getFileExtension(lockFile),
-            false
+            false,
         )
 
         repository.insertLockFile(file)

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Sort" >
+        <menu
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+            <group
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:checkableBehavior="single">
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Name" />
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Size" />
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Lock Date" />
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Unlock Date" />
+            </group>
+            <group
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:checkableBehavior="single"
+                android:divider="?android:listDivider">
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Ascending" />
+                <item
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:title="Descending" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="About" />
+</menu>

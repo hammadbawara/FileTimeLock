@@ -49,7 +49,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         if (adapter.getCurrentPath() == viewModel.path) {
-            onSupportNavigateUp()
+            super.onBackPressed()
             return true
         } else {
             adapter.onBackPressed()

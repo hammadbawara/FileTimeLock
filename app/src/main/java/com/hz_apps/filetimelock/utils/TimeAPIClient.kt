@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class TimeApiClient (
+class DateAPIClient (
                 private val activity: Activity,
                 private val onTimeAPIListener: OnTimeAPIListener
 ){

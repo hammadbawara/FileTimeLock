@@ -1,7 +1,7 @@
 package com.hz_apps.filetimelock.ui.files
 
+import DateAPIClient
 import OnTimeAPIListener
-import TimeApiClient
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -25,15 +25,16 @@ import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
-import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
+import com.hz_apps.filetimelock.utils.FileSort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -46,9 +47,10 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private var actionMode : ActionMode? = null
     private lateinit var adapter : LockedFileViewAdapter
     private lateinit var repository : DBRepository
-    private val timeApiClient by lazy { TimeApiClient(this, this) }
-    private var timeGetJob : Job? = null
+    private val dateGetAPI by lazy { DateAPIClient(this, this) }
+    private var dateGetJob : Job? = null
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,26 +78,22 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         // Running Coroutine for getting files from database and time from datastore
         CoroutineScope(Dispatchers.IO).launch {
             // Getting time from dataStore
-            getTimeFromSharedPrefs()
-            // Getting files from database
-            val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
+            getSharedPrefs()
+
+            getItemFromDBAndSetInRV()
 
             // Running Main thread tasks
             launch(Dispatchers.Main) {
-                // observer on locked files
-                lockedFiles.observe(this@FilesActivity) {
-                    setRecyclerView(it)
-                }
                 // Settings date on textView
                 bindings.timeViewActivityFiles.text = viewModel.timeNow?.format(dateTimeFormatter)
                 // Time Get Button
                 bindings.timeGetBtn.setOnClickListener {
-                    if (timeGetJob != null && timeGetJob!!.isActive) {
-                        timeGetJob!!.cancel()
+                    if (dateGetJob != null && dateGetJob!!.isActive) {
+                        dateGetJob!!.cancel()
                         stopGettingTime()
                         Toast.makeText(this@FilesActivity, "Time Get Cancelled", Toast.LENGTH_SHORT).show()
                     }
-                    else if (timeGetJob == null) {
+                    else if (dateGetJob == null) {
                         Toast.makeText(this@FilesActivity, "Getting Time", Toast.LENGTH_SHORT).show()
                         checkTime()
                     }
@@ -106,14 +104,27 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         }
     }
 
-    private fun setRecyclerView(it : MutableList<LockFile>) {
-        if (it.size == 0) {
-            bindings.emptyLockedFiles.visibility = View.VISIBLE
-        }else{
-            if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
+    private suspend fun getItemFromDBAndSetInRV() {
+        withContext(Dispatchers.Main){
+            bindings.progressBarFilesActivity.visibility = View.VISIBLE
         }
-        adapter = LockedFileViewAdapter(this, it, this, viewModel.timeNow!!)
-        bindings.lockedFilesRecyclerview.adapter = adapter
+
+        val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
+
+        withContext(Dispatchers.Main) {
+            // observer on locked files
+            lockedFiles.observe(this@FilesActivity) {
+                if (it.size == 0) {
+                    bindings.emptyLockedFiles.visibility = View.VISIBLE
+                }else{
+                    if (bindings.emptyLockedFiles.isVisible) bindings.emptyLockedFiles.visibility = View.GONE
+                }
+                adapter = LockedFileViewAdapter(this@FilesActivity, it, this@FilesActivity, viewModel.timeNow!!)
+                bindings.lockedFilesRecyclerview.adapter = adapter
+            }
+            bindings.progressBarFilesActivity.visibility = View.GONE
+        }
+
     }
 
     /*
@@ -121,16 +132,24 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
      */
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionMode == null) {
-            val file = File(adapter.lockedFilesList[position].path)
-            val contentUri = FileProvider.getUriForFile(this, "com.hz_apps.filetimelock.FileProvider", file)
-            val intent = Intent(Intent.ACTION_VIEW)
-            val fileType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(adapter.lockedFilesList[position].extension)
-            intent.setDataAndType(contentUri, fileType)
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            startActivity(intent)
+            if (adapter.lockedFilesList[position].isUnlocked) {
+                openFile(position)
+            }else{
+                Toast.makeText(this@FilesActivity, "This file is not unlocked yet", Toast.LENGTH_SHORT).show()
+            }
         }else {
             onItemSelected(position)
         }
+    }
+
+    private fun openFile(position : Int) {
+        val file = File(adapter.lockedFilesList[position].path)
+        val contentUri = FileProvider.getUriForFile(this, "com.hz_apps.filetimelock.FileProvider", file)
+        val intent = Intent(Intent.ACTION_VIEW)
+        val fileType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(adapter.lockedFilesList[position].extension)
+        intent.setDataAndType(contentUri, fileType)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(intent)
     }
 
     private fun onItemSelected(position: Int) {
@@ -233,9 +252,10 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         }
     }
 
-    override fun onFileUnlocked(position: Int) {
+    override fun onFileUnlocked(id : Int, position: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-
+            repository.setFileUnlocked(id)
+            adapter.lockedFilesList[position].isUnlocked = true
         }
     }
 
@@ -260,14 +280,14 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private fun checkTime() {
         bindings.timeProgressFilesActivity.visibility = View.VISIBLE
         bindings.timeGetBtn.setImageResource(R.drawable.ic_cancel)
-        timeGetJob = CoroutineScope(Dispatchers.IO).launch {
-            timeApiClient.getCurrentTime()
+        dateGetJob = CoroutineScope(Dispatchers.IO).launch {
+            dateGetAPI.getCurrentTime()
             stopGettingTime()
         }
     }
 
     private fun stopGettingTime() {
-        timeGetJob = null
+        dateGetJob = null
         runOnUiThread{
             bindings.timeGetBtn.setImageResource(R.drawable.ic_refresh)
             bindings.timeProgressFilesActivity.visibility = View.GONE
@@ -279,11 +299,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
       * Time store in shared preferences
      */
     private fun storeTimeInSharedPrefs(dateTimeInEpoch : Long) {
-        val preferences = getSharedPreferences("time", Context.MODE_PRIVATE)
+        val preferences = getSharedPreferences("FILES_ACTIVITY", Context.MODE_PRIVATE)
         preferences.edit().putLong("time", dateTimeInEpoch).apply()
     }
 
-    private fun getTimeFromSharedPrefs() {
+    private fun getSharedPrefs() {
         if (viewModel.timeNow == null) {
             viewModel.timeNow = LocalDateTime.now()
             // if it give error mean dateTime is not saved yet
@@ -292,7 +312,57 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             if (time != 0L) {
                 viewModel.timeNow = LocalDateTime.ofEpochSecond(time, 0, ZonedDateTime.now().offset)
             }
+
+            val sortType = preferences.getString("sort_by", "NAME")!!
+            viewModel.sortBy = FileSort.valueOf(sortType)
+            viewModel.isAscending = preferences.getBoolean("is_ascending", true)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.files_activity_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun saveStoredPref() {
+        getSharedPreferences("FILES_ACTIVITY", Context.MODE_PRIVATE)
+            .edit()
+            .putString("sort_by", viewModel.sortBy.name)
+            .putBoolean("is_ascending", viewModel.isAscending)
+            .apply()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        item.isChecked = true
+        when (item.title) {
+            "Name" -> {
+                viewModel.sortBy = FileSort.NAME
+                CoroutineScope(Dispatchers.IO).launch {
+                    getItemFromDBAndSetInRV()
+                }
+            }
+            "Size" -> {
+                viewModel.sortBy = FileSort.SIZE
+                CoroutineScope(Dispatchers.IO).launch {
+                    getItemFromDBAndSetInRV()
+                }
+            }
+            "Lock Date" -> {
+                viewModel.sortBy = FileSort.LOCK_DATE
+                CoroutineScope(Dispatchers.IO).launch {
+                    getItemFromDBAndSetInRV()
+                }
+            }
+            "Unlock Date" -> {
+                viewModel.sortBy = FileSort.UNLOCK_DATE
+                CoroutineScope(Dispatchers.IO).launch {
+                    getItemFromDBAndSetInRV()
+                }
+            }
+        }
+
+        saveStoredPref()
+        return super.onOptionsItemSelected(item)
     }
 
 }

@@ -1,18 +1,29 @@
 package com.hz_apps.filetimelock.database
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.hz_apps.filetimelock.utils.calculateTimeDifference
 import java.time.LocalDateTime
 
 @Entity
 data class LockFile (
     @PrimaryKey val id : Int,
     val name : String,
-    val lockTime: LocalDateTime,
-    val unlockTime : LocalDateTime,
+    val lockDate: LocalDateTime,
+    val unlockDate : LocalDateTime,
     val path: String,
     val size : String,
     val extension: String,
-    val isUnlocked: Boolean
+    var isUnlocked: Boolean,
 ) {
+    @Ignore
+    var remainingTime : String = ""
+
+    fun calculateRemainingTime(dateNow : LocalDateTime){
+        if (!isUnlocked) {
+            remainingTime = calculateTimeDifference(unlockDate, dateNow)
+        }
+    }
 }
+

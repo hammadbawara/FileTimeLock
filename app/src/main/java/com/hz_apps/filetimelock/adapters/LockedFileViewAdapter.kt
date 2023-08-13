@@ -7,11 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.view.ActionMode
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.database.LockFile
-import com.hz_apps.filetimelock.utils.calculateTimeDifference
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.time.LocalDateTime
 
@@ -20,11 +19,11 @@ class LockedFileViewAdapter (
     private val activity : Activity,
     val lockedFilesList : List<LockFile>,
     private val lockFileListeners: LockFileListeners,
-    private var timeNow : LocalDateTime
+    private var dateNow : LocalDateTime
 ) : RecyclerView.Adapter<LockedFileViewAdapter.ViewHolder>(){
 
-    fun updateTimeNow(timeNow: LocalDateTime) {
-        this.timeNow = timeNow
+    fun updateTimeNow(dateNow: LocalDateTime) {
+        this.dateNow = dateNow
         for (i in lockedFilesList.indices) {
             if (!lockedFilesList[i].isUnlocked) {
                 notifyItemChanged(i)
@@ -32,7 +31,6 @@ class LockedFileViewAdapter (
         }
     }
 
-    private var actionMode : ActionMode.Callback? = null
     val checkedItems : MutableList<Boolean> = MutableList(lockedFilesList.size){false}
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).
@@ -45,20 +43,25 @@ class LockedFileViewAdapter (
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        setFileIcon(holder.imageView, lockedFilesList[position].extension)
-        holder.name.text = lockedFilesList[position].name
+        holder.remainingTime.visibility = View.INVISIBLE
+        val file = lockedFilesList[position]
 
-        if (lockedFilesList[position].isUnlocked){
+        setFileIcon(holder.imageView, file.extension)
+        holder.name.text = file.name
+
+
+
+        if (file.isUnlocked) {
 
         }else{
-            val time =  calculateTimeDifference(timeNow, lockedFilesList[position].unlockTime)
-            if (time == "unlocked"){
-                lockFileListeners.onFileUnlocked(position)
+            file.calculateRemainingTime(dateNow)
+            if (file.remainingTime == "unlocked") {
+                lockFileListeners.onFileUnlocked(file.id, position)
             }else{
-                holder.remainingTime.text = time
+                holder.remainingTimeLayout.visibility = View.VISIBLE
+                holder.remainingTime.text = file.remainingTime
             }
         }
-
 
         if (checkedItems[position])
             setItemBackgroundSelected(holder.itemView)
@@ -77,20 +80,7 @@ class LockedFileViewAdapter (
         val imageView: ImageView = itemView.findViewById(R.id.image_locked_item)
         val name: TextView = itemView.findViewById(R.id.name_locked_item)
         val remainingTime: TextView = itemView.findViewById(R.id.remaining_time_locked_item)
-    }
-
-    fun setItemSelected(item : View, position: Int) {
-        if (actionMode == null) {
-            return
-        }
-        if (checkedItems[position]) {
-            setItemBackgroundUnselected(item)
-            checkedItems[position] = false
-        }else {
-            checkedItems[position] = true
-            setItemBackgroundSelected(item)
-        }
-        notifyItemChanged(position)
+        val remainingTimeLayout : ConstraintLayout = itemView.findViewById(R.id.remainingTimeLayout)
     }
     private fun setItemBackgroundSelected(item : View) {
         item.setBackgroundColor(activity.resources.getColor(R.color.selected_item_background, activity.theme))
@@ -103,7 +93,7 @@ class LockedFileViewAdapter (
 interface LockFileListeners {
     fun onItemClicked(itemView : View, position: Int)
     fun onItemLongClicked(itemView : View, position: Int) : Boolean
-    fun onFileUnlocked(position: Int)
+    fun onFileUnlocked(id: Int, position : Int)
 }
 
 

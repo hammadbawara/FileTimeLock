@@ -25,12 +25,12 @@ fun getDateInFormat(dateTime: LocalDateTime): String {
     return dateTime.format(formatter)
 }
 
-fun calculateTimeDifference(lockDate: LocalDateTime, unlockDate: LocalDateTime): String {
-    if (lockDate >= unlockDate) {
+fun calculateTimeDifference(end: LocalDateTime,start: LocalDateTime,): String {
+    if (start >= end) {
         return "unlocked"
     }
 
-    val duration = Duration.between(lockDate, unlockDate)
+    val duration = Duration.between(start, end)
 
     return when {
         duration.toDays() >= 365 -> "${duration.toDays() / 365} yr"

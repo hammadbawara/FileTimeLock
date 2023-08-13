@@ -19,34 +19,47 @@
         android:id="@+id/name_locked_item"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="5dp"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:padding="5dp"
         android:text="TextView"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/image_locked_item"
-        app:layout_constraintEnd_toStartOf="@+id/remaining_time_locked_item"
+        app:layout_constraintEnd_toStartOf="@+id/remainingTimeLayout"
         app:layout_constraintStart_toEndOf="@+id/image_locked_item"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/remaining_time_locked_item"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/remainingTimeLayout"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginEnd="5dp"
-        android:gravity="center_vertical"
-        android:text="29d"
-        app:layout_constraintBottom_toBottomOf="@+id/image_locked_item"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/image_locked_item" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="5dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_locked_item" />
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/remaining_time_locked_item"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_lock" />
+
+        <TextView
+            android:id="@+id/remaining_time_locked_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="29d"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
