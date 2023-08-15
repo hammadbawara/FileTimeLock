@@ -59,6 +59,7 @@
         </menu>
     </item>
     <item
+        android:id="@+id/settings_activity_action_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="Settings" />

@@ -15,11 +15,13 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
+import androidx.preference.PreferenceManager
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
@@ -29,6 +31,7 @@ import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
+import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +59,8 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+
+        setAppTheme()
 
         // Creating database instance
         val appDB = AppDB.getInstance(applicationContext)
@@ -370,6 +375,10 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             R.id.sort_by_descending_files_activity -> {
                 handleOrderAction(item, false)
             }
+            R.id.settings_activity_action_menu -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -394,6 +403,18 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 saveStoredPref()
             }
         }
+    }
+
+    private fun setAppTheme() {
+        val preferencesManager = PreferenceManager.getDefaultSharedPreferences(this)
+        val theme = preferencesManager.getString("theme", "")
+        val themeValues = resources.getStringArray(R.array.theme_values)
+        if (theme == themeValues[1]) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }else if (theme == themeValues[2]) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        }
+
     }
 
 }
