@@ -32,16 +32,16 @@ interface LockFileDao {
     @Query("SELECT * FROM LockFile ORDER BY size DESC")
     fun getAllByFileSizeDesc(): LiveData<MutableList<LockFile>>
 
-    @Query("SELECT * FROM LockFile ORDER BY lockDate ASC")
+    @Query("SELECT * FROM LockFile ORDER BY dateAdded ASC")
     fun getAllByLockDate(): LiveData<MutableList<LockFile>>
 
-    @Query("SELECT * FROM LockFile ORDER BY lockDate DESC")
+    @Query("SELECT * FROM LockFile ORDER BY dateAdded DESC")
     fun getAllByLockDateDesc(): LiveData<MutableList<LockFile>>
 
-    @Query("SELECT * FROM LockFile ORDER BY unlockDate ASC")
+    @Query("SELECT * FROM LockFile ORDER BY dateUnlock ASC")
     fun getAllByUnlockDate(): LiveData<MutableList<LockFile>>
 
-    @Query("SELECT * FROM LockFile ORDER BY unlockDate DESC")
+    @Query("SELECT * FROM LockFile ORDER BY dateUnlock DESC")
     fun getAllByUnlockDateDesc(): LiveData<MutableList<LockFile>>
 
     @Query("UPDATE lockfile set isUnlocked=1 where id = :id")

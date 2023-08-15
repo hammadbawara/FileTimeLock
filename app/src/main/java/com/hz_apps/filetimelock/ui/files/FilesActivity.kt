@@ -27,7 +27,7 @@ import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
-import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
+import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.utils.FileSort
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +67,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 this,
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(this, LockFileActivity::class.java)
+                val intent = Intent(this, FilePickerActivity::class.java)
                 startActivity(intent)
             }else{
                 val intent = Intent(this, PermissionsActivity::class.java)
@@ -318,7 +318,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 viewModel.timeNow = LocalDateTime.ofEpochSecond(time, 0, ZonedDateTime.now().offset)
             }
 
-            val sortType = preferences.getString("sort_by", "LOCK_DATE")!!
+            val sortType = preferences.getString("sort_by", FileSort.DATE_UNLOCK.name)!!
             viewModel.sortBy = FileSort.valueOf(sortType)
             viewModel.isAscending = preferences.getBoolean("is_ascending", true)
         }
@@ -329,8 +329,8 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         when (viewModel.sortBy) {
             FileSort.NAME -> menu?.findItem(R.id.sort_by_name_files_activity)?.isChecked = true
             FileSort.SIZE -> menu?.findItem(R.id.sort_by_size_files_activity)?.isChecked = true
-            FileSort.LOCK_DATE -> menu?.findItem(R.id.sort_by_lock_date_files_activity)?.isChecked = true
-            FileSort.UNLOCK_DATE -> menu?.findItem(R.id.sort_by_unlock_date_files_activity)?.isChecked = true
+            FileSort.DATE_ADDED -> menu?.findItem(R.id.sort_by_date_added_files_activity)?.isChecked = true
+            FileSort.DATE_UNLOCK -> menu?.findItem(R.id.sort_by_date_unlock_files_activity)?.isChecked = true
             else -> {
             }
         }
@@ -358,11 +358,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             R.id.sort_by_size_files_activity -> {
                 handleSortAction(item, FileSort.SIZE)
             }
-            R.id.sort_by_lock_date_files_activity -> {
-                handleSortAction(item, FileSort.LOCK_DATE)
+            R.id.sort_by_date_added_files_activity -> {
+                handleSortAction(item, FileSort.DATE_ADDED)
             }
-            R.id.sort_by_unlock_date_files_activity -> {
-                handleSortAction(item, FileSort.UNLOCK_DATE)
+            R.id.sort_by_date_unlock_files_activity -> {
+                handleSortAction(item, FileSort.DATE_UNLOCK)
             }
             R.id.sort_by_ascending_files_activity -> {
                 handleOrderAction(item, true)

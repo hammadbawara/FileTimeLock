@@ -10,8 +10,8 @@ import java.time.LocalDateTime
 data class LockFile (
     @PrimaryKey val id : Int,
     val name : String,
-    val lockDate: LocalDateTime,
-    val unlockDate : LocalDateTime,
+    val dateAdded: LocalDateTime,
+    val dateUnlock : LocalDateTime,
     val path: String,
     val size : Long,
     val extension: String,
@@ -22,7 +22,7 @@ data class LockFile (
 
     fun calculateRemainingTime(dateNow : LocalDateTime){
         if (!isUnlocked) {
-            remainingTime = calculateTimeDifference(unlockDate, dateNow)
+            remainingTime = calculateTimeDifference(dateUnlock, dateNow)
         }
     }
 }

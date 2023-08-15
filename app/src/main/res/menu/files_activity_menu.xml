@@ -22,15 +22,15 @@
                     android:layout_height="wrap_content"
                     android:title="Size" />
                 <item
-                    android:id="@+id/sort_by_lock_date_files_activity"
+                    android:id="@+id/sort_by_date_added_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:title="Lock Date" />
+                    android:title="Date Added" />
                 <item
-                    android:id="@+id/sort_by_unlock_date_files_activity"
+                    android:id="@+id/sort_by_date_unlock_files_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:title="Unlock Date" />
+                    android:title="Date Unlock" />
             </group>
         </menu>
     </item>
@@ -58,6 +58,10 @@
             </group>
         </menu>
     </item>
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Settings" />
     <item
         android:id="@+id/about_files_activity"
         android:layout_width="wrap_content"

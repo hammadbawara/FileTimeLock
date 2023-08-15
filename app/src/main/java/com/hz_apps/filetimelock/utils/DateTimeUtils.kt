@@ -39,6 +39,6 @@ fun calculateTimeDifference(end: LocalDateTime,start: LocalDateTime,): String {
         duration.toDays() > 0 -> "${duration.toDays()} day"
         duration.toHours() > 0 -> "${duration.toHours()} hr"
         duration.toMinutes() > 0 -> "${duration.toMinutes()} min"
-        else -> "Less than a minute"
+        else -> ">1 min"
     }
 }

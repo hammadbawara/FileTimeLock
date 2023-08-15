@@ -12,8 +12,8 @@ class DBRepository(
         return when (sortBy) {
             FileSort.NAME -> if (isAscending) lockFileDao.getAllByFileName() else lockFileDao.getAllByFileNameDesc()
             FileSort.SIZE -> if (isAscending) lockFileDao.getAllByFileSize() else lockFileDao.getAllByFileSizeDesc()
-            FileSort.LOCK_DATE -> if (isAscending) lockFileDao.getAllByLockDate() else lockFileDao.getAllByLockDateDesc()
-            FileSort.UNLOCK_DATE -> if (isAscending) lockFileDao.getAllByUnlockDate() else lockFileDao.getAllByUnlockDateDesc()
+            FileSort.DATE_ADDED -> if (isAscending) lockFileDao.getAllByLockDate() else lockFileDao.getAllByLockDateDesc()
+            FileSort.DATE_UNLOCK -> if (isAscending) lockFileDao.getAllByUnlockDate() else lockFileDao.getAllByUnlockDateDesc()
             else -> {
                 if (isAscending) lockFileDao.getAllByFileName() else lockFileDao.getAllByFileNameDesc()
             }

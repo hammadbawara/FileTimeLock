@@ -1,10 +1,7 @@
 package com.hz_apps.filetimelock.ui.lock_file
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -12,7 +9,6 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.hz_apps.filetimelock.databinding.ActivityLockFileBinding
 import com.hz_apps.filetimelock.ui.dialogs.LockFileDialog
-import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
@@ -22,7 +18,6 @@ import java.time.LocalDateTime
 
 class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
 
-    private lateinit var selectedFile: File
     private val viewModel: LockFileViewModel by viewModels()
     private lateinit var bindings: ActivityLockFileBinding
 
@@ -33,11 +28,13 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Check if the selected file is already available or launch the file picker
-        if (viewModel.lockFile == null) {
-            launchFilePicker()
-        } else {
-            setValues()
-        }
+        viewModel.lockFile =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getSerializableExtra("result", File::class.java)!!
+            } else {
+                intent.getSerializableExtra("result") as File
+            }
+        setValues()
 
         bindings.okLockFile.setOnClickListener {
             val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.getUnlockTime(), this) }
@@ -102,28 +99,6 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
 
             timePickerBuilder.show(supportFragmentManager, "TIME_PICKER")
         }
-    }
-
-    // Launch the file picker activity using Activity Result API
-    private fun launchFilePicker() {
-        val startForResult =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-                if (result.resultCode == RESULT_OK) {
-                    val intent = result.data
-                    selectedFile =
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            intent!!.getSerializableExtra("result", File::class.java)!!
-                        } else {
-                            intent!!.getSerializableExtra("result") as File
-                        }
-                    viewModel.lockFile = selectedFile
-                    setValues()
-                } else {
-                    finish()
-                }
-            }
-
-        startForResult.launch(Intent(this, FilePickerActivity::class.java))
     }
 
     override fun onSupportNavigateUp(): Boolean {

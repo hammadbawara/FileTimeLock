@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
+import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
@@ -58,9 +59,10 @@ class FileViewAdapter(
                 updateFiles()
             }
             else if (currentFile.isFile) {
-                val intent = Intent()
+
+                val intent = Intent(activity, LockFileActivity::class.java)
                 intent.putExtra("result", currentFile)
-                activity.setResult(Activity.RESULT_OK, intent)
+                activity.startActivity(intent)
                 activity.finish()
             }
         }
