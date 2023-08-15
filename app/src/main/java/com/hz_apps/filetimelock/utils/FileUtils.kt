@@ -1,7 +1,11 @@
 package com.hz_apps.filetimelock.utils
 
 import android.content.Context
+import android.content.Intent
+import android.webkit.MimeTypeMap
 import android.widget.ProgressBar
+import androidx.core.content.FileProvider
+import com.hz_apps.filetimelock.database.LockFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -78,4 +82,14 @@ fun runShellCommand(command: String): String {
     process.waitFor()
 
     return output.toString()
+}
+
+fun openLockFile(context: Context, lockFile: LockFile) {
+    val file = File(lockFile.path)
+    val contentUri = FileProvider.getUriForFile(context, "com.hz_apps.filetimelock.FileProvider", file)
+    val intent = Intent(Intent.ACTION_VIEW)
+    val fileType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(lockFile.extension)
+    intent.setDataAndType(contentUri, fileType)
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    context.startActivity(intent)
 }

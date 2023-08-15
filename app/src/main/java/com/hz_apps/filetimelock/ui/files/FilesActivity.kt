@@ -11,17 +11,15 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.webkit.MimeTypeMap
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
 import androidx.preference.PreferenceManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
@@ -33,6 +31,7 @@ import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
+import com.hz_apps.filetimelock.utils.openLockFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -53,7 +52,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private lateinit var repository : DBRepository
     private val dateGetAPI by lazy { DateAPIClient(this, this) }
     private var dateGetJob : Job? = null
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   HH:mm")
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   hh:mm a")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,25 +137,16 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
      */
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionMode == null) {
-            if (adapter.lockedFilesList[position].isUnlocked) {
+            if (adapter.lockedFilesList[position].isUnlocked){
+                openLockFile(this,adapter.lockedFilesList[position])
+            }else{
                 val fileViewDialog = LockFileViewDialog(adapter.lockedFilesList[position])
                 fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
-            }else{
-                Toast.makeText(this@FilesActivity, "This file is not unlocked yet", Toast.LENGTH_SHORT).show()
             }
+
         }else {
             onItemSelected(itemView, position)
         }
-    }
-
-    private fun openFile(position : Int) {
-        val file = File(adapter.lockedFilesList[position].path)
-        val contentUri = FileProvider.getUriForFile(this, "com.hz_apps.filetimelock.FileProvider", file)
-        val intent = Intent(Intent.ACTION_VIEW)
-        val fileType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(adapter.lockedFilesList[position].extension)
-        intent.setDataAndType(contentUri, fileType)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        startActivity(intent)
     }
 
     private fun onItemSelected(itemView: View, position: Int) {
@@ -202,7 +192,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                 if (item != null) {
                     if (item.title == "Delete") {
-                        val dialog = AlertDialog.Builder(this@FilesActivity)
+                        val dialog = MaterialAlertDialogBuilder(this@FilesActivity)
                         dialog.setTitle("Delete")
                         dialog.setMessage("Are you sure you want to delete the selected items?")
                         dialog.setPositiveButton("Yes") { _, _ ->

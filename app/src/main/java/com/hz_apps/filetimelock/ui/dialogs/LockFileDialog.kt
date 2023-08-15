@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.database.LockFile
@@ -39,7 +40,7 @@ class LockFileDialog(
         db = AppDB.getInstance(requireContext())
         repository = DBRepository(db.lockFileDao())
 
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext())
         dialog.setTitle("Loading")
         dialog.setView(bindings.root)
 
