@@ -30,6 +30,7 @@ import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
+import com.hz_apps.filetimelock.ui.file_transfer.FileTransferActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
@@ -165,6 +166,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         if (adapter.lockedFilesList[position].isUnlocked) {
             popupMenu.menu.add("Open")
             popupMenu.menu.add("Share")
+            popupMenu.menu.add("Move")
         }
 
         popupMenu.menu.add("Info")
@@ -186,6 +188,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
                 "Share" -> {
                     shareFile(this, File(lockFile.path))
+                }
+
+                "Move" -> {
+                    val intent = Intent(this, FileTransferActivity::class.java)
+                    startActivity(intent)
                 }
             }
             true

@@ -1,8 +1,6 @@
 package com.hz_apps.filetimelock.adapters
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,23 +9,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerViewModel
-import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 
 class FileViewAdapter(
+    val file : File,
+    val clickListener: FileViewClickListener
 ) : RecyclerView.Adapter<FileViewAdapter.ViewHolder>() {
 
     private lateinit var files: MutableList<File>
     private lateinit var viewModel: FilePickerViewModel
-    private lateinit var activity: Activity
-
-    constructor(activity: Activity, viewModel: FilePickerViewModel) : this() {
-        this.viewModel = viewModel
-        this.files = listFilteredFiles(viewModel.file)
-        this.activity = activity;
-    }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -54,17 +46,7 @@ class FileViewAdapter(
         }
 
         holder.itemView.setOnClickListener {
-            if (currentFile.isDirectory) {
-                viewModel.file = currentFile
-                updateFiles()
-            }
-            else if (currentFile.isFile) {
-
-                val intent = Intent(activity, LockFileActivity::class.java)
-                intent.putExtra("result", currentFile)
-                activity.startActivity(intent)
-                activity.finish()
-            }
+            clickListener.onClick(position)
         }
 
     }
@@ -96,5 +78,8 @@ class FileViewAdapter(
         val fileName: TextView = itemView.findViewById(R.id.name_file_view)
         val fileIcon: ImageView = itemView.findViewById(R.id.icon_file_view)
         val noOfItems : TextView = itemView.findViewById(R.id.no_of_items_file_view)
+    }
+    interface FileViewClickListener{
+        fun onClick(position: Int)
     }
 }

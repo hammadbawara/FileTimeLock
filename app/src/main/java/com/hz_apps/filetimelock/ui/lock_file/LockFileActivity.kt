@@ -1,6 +1,5 @@
 package com.hz_apps.filetimelock.ui.lock_file
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -28,12 +27,7 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Check if the selected file is already available or launch the file picker
-        viewModel.lockFile =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getSerializableExtra("result", File::class.java)!!
-            } else {
-                intent.getSerializableExtra("result") as File
-            }
+        viewModel.lockFile = File(intent.getStringExtra("file_path")!!)
         setValues()
 
         bindings.okLockFile.setOnClickListener {

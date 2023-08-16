@@ -6,39 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".ui.file_picker.FilePickerActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_file_view"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:name="com.hz_apps.filetimelock.ui.file_picker.FileViewFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@+id/select_cancel_file_picker"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_file_view_linear" />
-
-    <LinearLayout
-        android:id="@+id/select_cancel_file_picker"
-        android:layout_width="409dp"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/cancel_file_picker"
-            android:layout_width="198dp"
-            android:layout_height="wrap_content"
-            android:text="Cancel" />
-
-        <Button
-            android:id="@+id/select_file_picker"
-            android:layout_width="198dp"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Select" />
-    </LinearLayout>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
-    android:paddingStart="8dp"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
@@ -20,12 +19,12 @@
 
     <TextView
         android:id="@+id/name_locked_item"
+        style="@style/file_text_view_style"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         android:gravity="center_vertical"
         android:padding="5dp"
-        style="@style/file_text_view_style"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/remainingTimeLayout"
         app:layout_constraintStart_toEndOf="@+id/image_locked_item"

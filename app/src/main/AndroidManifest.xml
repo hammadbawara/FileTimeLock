@@ -23,6 +23,12 @@
         android:theme="@style/Theme.FileTimeLock"
         tools:targetApi="31">
         <activity
+            android:name=".ui.file_picker.FilePickerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.file_transfer.FileTransferActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
             android:label="@string/title_activity_settings" />
@@ -32,11 +38,6 @@
         <activity
             android:name=".ui.permissions.PermissionsActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.file_picker.FilePickerActivity"
-            android:exported="false"
-            android:label="@string/title_activity_add_files"
-            android:theme="@style/Theme.FileTimeLock" />
         <activity
             android:name=".ui.files.FilesActivity"
             android:exported="true">
@@ -49,7 +50,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.FileTimeLock"></activity>
+            android:theme="@style/Theme.FileTimeLock" />
 
         <meta-data
             android:name="preloaded_fonts"
@@ -63,7 +64,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 
