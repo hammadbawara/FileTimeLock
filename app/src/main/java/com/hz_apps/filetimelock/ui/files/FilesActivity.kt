@@ -217,6 +217,8 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     }
 
     private fun startActionMode() {
+        // hiding more option button from all items
+
         val actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
                 menuInflater.inflate(R.menu.locked_files_context_menu, menu)
@@ -319,8 +321,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             repository.setFileUnlocked(id, newFile.absolutePath)
             adapter.lockedFilesList[position].isUnlocked = true
             runOnUiThread {
-                val holder = bindings.lockedFilesRecyclerview.findViewHolderForAdapterPosition(position) as LockedFileViewAdapter.LockedFileViewHolder
-                adapter.setFileUnlocked(holder, position)
+                adapter.notifyItemChanged(position)
             }
         }
     }
@@ -349,7 +350,10 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             if (!lockedFile.isUnlocked) {
                 val viewHolder =  bindings.lockedFilesRecyclerview.findViewHolderForAdapterPosition(i)
                         as LockedFileViewAdapter.LockedFileViewHolder
-                adapter.setTimeOnItem(viewHolder, position = i)
+                lockedFile.calculateRemainingTime(viewModel.timeNow!!)
+                if (lockedFile.remainingTime != viewHolder.remainingTime.text) {
+                    adapter.notifyItemChanged(i)
+                }
             }
         }
     }

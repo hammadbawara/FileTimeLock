@@ -43,7 +43,11 @@ class LockedFileViewAdapter (
         val file = lockedFilesList[position]
         holder.name.text = file.name
 
-        setTimeOnItem(holder, position)
+        if (file.isUnlocked) {
+            setFileUnlocked(holder, position)
+        }else {
+            setTimeOnItem(holder, position)
+        }
 
         if (checkedItems[position])
             setItemBackgroundSelected(holder.itemView)
@@ -91,20 +95,16 @@ class LockedFileViewAdapter (
 
     fun setTimeOnItem(holder : LockedFileViewHolder, position: Int) {
         val file = lockedFilesList[position]
-        if (file.isUnlocked) {
+        file.calculateRemainingTime(dateNow)
+        if (file.remainingTime == "unlocked") {
+            lockFileListeners.onFileUnlocked(file.id, position)
             setFileUnlocked(holder, position)
-        }else {
-            file.calculateRemainingTime(dateNow)
-            if (file.remainingTime == "unlocked") {
-                lockFileListeners.onFileUnlocked(file.id, position)
-                setFileUnlocked(holder, position)
-            }else{
-                if (!holder.remainingTimeLayout.isVisible) {
-                    holder.remainingTimeLayout.visibility = View.VISIBLE
-                }
-                holder.remainingTime.text = file.remainingTime
-                setFileIcon(holder.imageView, file.extension)
+        }else{
+            if (!holder.remainingTimeLayout.isVisible) {
+                holder.remainingTimeLayout.visibility = View.VISIBLE
             }
+            holder.remainingTime.text = file.remainingTime
+            setFileIcon(holder.imageView, file.extension)
         }
 
     }
