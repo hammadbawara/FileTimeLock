@@ -11,13 +11,16 @@ import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 import java.time.format.DateTimeFormatter
 
-class LockFileViewDialog (val lockFile : LockFile): DialogFragment() {
+class LockFileViewDialog(): DialogFragment() {
     private lateinit var bindings : DialogLockFileViewBinding
     private val dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy  hh:mm a")
+    private lateinit var lockFile : LockFile
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         bindings = DialogLockFileViewBinding.inflate(layoutInflater)
         val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
 
+        lockFile = arguments?.getSerializable("LOCK_FILE") as LockFile
 
         bindings.nameLockFileView.text = lockFile.name
         bindings.dateAddedLockFileView.text = lockFile.dateAdded.format(dateFormatter)

@@ -44,7 +44,7 @@ interface LockFileDao {
     @Query("SELECT * FROM LockFile ORDER BY dateUnlock DESC")
     fun getAllByUnlockDateDesc(): LiveData<MutableList<LockFile>>
 
-    @Query("UPDATE lockfile set isUnlocked=1 where id = :id")
-    fun setFileUnlocked(id : Int)
+    @Query("UPDATE lockfile set isUnlocked=1, path=:newPath where id = :id")
+    fun setFileUnlocked(id : Int, newPath : String)
 
 }

@@ -20,8 +20,9 @@ class DBRepository(
         }
     }
 
-    suspend fun setFileUnlocked(id : Int) {
-        lockFileDao.setFileUnlocked(id)
+    suspend fun setFileUnlocked(id : Int, newPath : String) {
+        lockFileDao.setFileUnlocked(id, newPath)
+
     }
 
 

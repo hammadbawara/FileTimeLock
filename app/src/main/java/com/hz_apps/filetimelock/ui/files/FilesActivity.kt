@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -15,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
@@ -32,12 +34,12 @@ import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
 import com.hz_apps.filetimelock.utils.openLockFile
+import com.hz_apps.filetimelock.utils.shareFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -105,18 +107,18 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 }
                 // Checking time from internet
                 checkTime()
-            }
+            }.join()
         }
     }
 
     private suspend fun getItemFromDBAndSetInRV() {
-        withContext(Dispatchers.Main){
+        CoroutineScope(Dispatchers.Main).launch{
             bindings.progressBarFilesActivity.visibility = View.VISIBLE
-        }
+        }.join()
 
         val lockedFiles = viewModel.getLockedFiles(repository).distinctUntilChanged()
 
-        withContext(Dispatchers.Main) {
+        CoroutineScope(Dispatchers.Main).launch {
             // observer on locked files
             lockedFiles.observe(this@FilesActivity) {
                 if (it.size == 0) {
@@ -128,7 +130,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 bindings.lockedFilesRecyclerview.adapter = adapter
             }
             bindings.progressBarFilesActivity.visibility = View.GONE
-        }
+        }.join()
 
     }
 
@@ -137,16 +139,63 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
      */
     override fun onItemClicked(itemView: View, position: Int) {
         if (actionMode == null) {
-            if (adapter.lockedFilesList[position].isUnlocked){
-                openLockFile(this,adapter.lockedFilesList[position])
-            }else{
-                val fileViewDialog = LockFileViewDialog(adapter.lockedFilesList[position])
-                fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
-            }
-
+            showLockFileInfo(position)
         }else {
             onItemSelected(itemView, position)
         }
+    }
+
+    override fun onItemLongClicked(itemView: View, position: Int): Boolean {
+        if (actionMode == null) {
+            startActionMode()
+            onItemSelected(itemView, position)
+        } else{
+            onItemSelected(itemView, position)
+        }
+        return true
+    }
+
+    override fun onMoreOptionClicked(moreOptionView: View, itemView: View, position: Int) {
+        val lockFile = adapter.lockedFilesList[position]
+        val popupMenu = PopupMenu(this, moreOptionView)
+
+        if (adapter.lockedFilesList[position].isUnlocked) {
+            popupMenu.menu.add("Open")
+            popupMenu.menu.add("Share")
+        }
+
+        popupMenu.menu.add("Info")
+        popupMenu.menu.add("Delete")
+
+        popupMenu.setOnMenuItemClickListener {
+            when(it.title) {
+                "Info" -> {
+                    showLockFileInfo(position)
+                }
+                "Delete" -> {
+                    startActionMode()
+                    onItemSelected(itemView, position)
+                    deleteItems()
+                }
+                "Open" -> {
+                    openLockFile(this, lockFile)
+                }
+
+                "Share" -> {
+                    shareFile(this, File(lockFile.path))
+                }
+            }
+            true
+        }
+        popupMenu.show()
+    }
+
+    private fun showLockFileInfo(position: Int) {
+        val fileViewDialog = LockFileViewDialog()
+        fileViewDialog.arguments = Bundle().apply {
+            putSerializable("LOCK_FILE", adapter.lockedFilesList[position])
+        }
+        fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
     }
 
     private fun onItemSelected(itemView: View, position: Int) {
@@ -167,20 +216,10 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         }
     }
 
-    override fun onItemLongClicked(itemView: View, position: Int): Boolean {
-        if (actionMode == null) {
-            startActionMode()
-            onItemSelected(itemView, position)
-        } else{
-            onItemSelected(itemView, position)
-        }
-        return true
-    }
-
     private fun startActionMode() {
         val actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                menuInflater.inflate(R.menu.item_locked_file_context_menu, menu)
+                menuInflater.inflate(R.menu.locked_files_context_menu, menu)
                 return true
             }
 
@@ -192,16 +231,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                 if (item != null) {
                     if (item.title == "Delete") {
-                        val dialog = MaterialAlertDialogBuilder(this@FilesActivity)
-                        dialog.setTitle("Delete")
-                        dialog.setMessage("Are you sure you want to delete the selected items?")
-                        dialog.setPositiveButton("Yes") { _, _ ->
-                            deleteSelectedItems()
-                            Toast.makeText(this@FilesActivity, "Items Deleted", Toast.LENGTH_SHORT).show()
-                            mode?.finish()
-                        }
-                        dialog.setNegativeButton("No") { _, _ -> }
-                        dialog.show()
+                        deleteItems()
                     } else if (item.title == "Select All") {
                         if (viewModel.numOfSelectedItems == adapter.lockedFilesList.size) {
                             adapter.checkedItems.fill(false)
@@ -233,7 +263,33 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
     }
 
-    fun deleteSelectedItems() {
+    fun shareAllSelectedFiles() {
+        val filesToShare = ArrayList<Uri>()
+        for (i in adapter.checkedItems.indices) {
+            if (adapter.checkedItems[i]) {
+                filesToShare.add(Uri.parse(adapter.lockedFilesList[i].path))
+            }
+        }
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
+        intent.type = "*/*"
+        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, filesToShare)
+        startActivity(Intent.createChooser(intent, "Share Files"))
+    }
+
+    private fun deleteItems() {
+        val dialog = MaterialAlertDialogBuilder(this)
+        dialog.setTitle("Delete")
+        dialog.setMessage("Are you sure you want to delete the selected items?")
+        dialog.setPositiveButton("Yes") { _, _ ->
+            deleteSelectedItems()
+            Toast.makeText(this, "Items Deleted", Toast.LENGTH_SHORT).show()
+            actionMode?.finish()
+        }
+        dialog.setNegativeButton("No") { _, _ -> }
+        dialog.show()
+    }
+
+    private fun deleteSelectedItems() {
         for (i in adapter.checkedItems.indices) {
             if (adapter.checkedItems[i]) {
                 val file = File(adapter.lockedFilesList[i].path)
@@ -251,10 +307,20 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
     override fun onFileUnlocked(id : Int, position: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            repository.setFileUnlocked(id)
+            val file = File(adapter.lockedFilesList[position].path)
+            var newFile = File(file.parent, adapter.lockedFilesList[position].name)
+            var i = 1
+            while (newFile.exists()) {
+                newFile = File(file.parent, adapter.lockedFilesList[position].name + "($i)")
+                i++
+            }
+            file.renameTo(newFile)
+
+            repository.setFileUnlocked(id, newFile.absolutePath)
             adapter.lockedFilesList[position].isUnlocked = true
             runOnUiThread {
-                adapter.notifyItemChanged(position)
+                val holder = bindings.lockedFilesRecyclerview.findViewHolderForAdapterPosition(position) as LockedFileViewAdapter.LockedFileViewHolder
+                adapter.setFileUnlocked(holder, position)
             }
         }
     }
@@ -265,9 +331,26 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     override fun onGetTime(dateTime: LocalDateTime) {
         viewModel.timeNow = dateTime
         bindings.timeViewActivityFiles.text = dateTime.format(dateTimeFormatter)
-        adapter.updateTimeNow(dateTime)
+        try{
+            updateTimeOnAllItems()
+        } catch (_: Exception) {
+
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             (dateTime.toEpochSecond(ZonedDateTime.now().offset))
+        }
+    }
+
+    private fun updateTimeOnAllItems() {
+        adapter.updateTimeNow(viewModel.timeNow!!)
+        for (i in 0 .. adapter.lockedFilesList.size) {
+            val lockedFile = adapter.lockedFilesList[i]
+            if (!lockedFile.isUnlocked) {
+                val viewHolder =  bindings.lockedFilesRecyclerview.findViewHolderForAdapterPosition(i)
+                        as LockedFileViewAdapter.LockedFileViewHolder
+                adapter.setTimeOnItem(viewHolder, position = i)
+            }
         }
     }
     override fun onFailToGetTime(error: String) {
