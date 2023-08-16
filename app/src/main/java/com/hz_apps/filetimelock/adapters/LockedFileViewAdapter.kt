@@ -24,6 +24,8 @@ class LockedFileViewAdapter (
     private var dateNow : LocalDateTime
 ) : RecyclerView.Adapter<LockedFileViewAdapter.LockedFileViewHolder>(){
 
+    var isInActionMode = false
+
     fun updateTimeNow(dateNow: LocalDateTime) {
         this.dateNow = dateNow
     }
@@ -40,6 +42,13 @@ class LockedFileViewAdapter (
     }
 
     override fun onBindViewHolder(holder: LockedFileViewHolder, position: Int) {
+        if (isInActionMode) {
+            holder.moreOptions.visibility = View.INVISIBLE
+        }else{
+            if (!holder.moreOptions.isVisible) {
+                holder.moreOptions.visibility = View.VISIBLE
+            }
+        }
         val file = lockedFilesList[position]
         holder.name.text = file.name
 
@@ -86,7 +95,7 @@ class LockedFileViewAdapter (
             setItemBackgroundUnselected(itemView)
     }
 
-    fun setFileUnlocked(holder : LockedFileViewHolder, position: Int) {
+    private fun setFileUnlocked(holder : LockedFileViewHolder, position: Int) {
         if (holder.remainingTimeLayout.isVisible) {
             holder.remainingTimeLayout.visibility = View.INVISIBLE
         }

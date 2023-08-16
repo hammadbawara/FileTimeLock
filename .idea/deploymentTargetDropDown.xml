@@ -6,12 +6,12 @@
         <type value="RUNNING_DEVICE_TARGET" />
         <deviceKey>
           <Key>
-            <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="C:\Users\hamma\.android\avd\Huawei_720p_API_29.avd" />
+            <type value="SERIAL_NUMBER" />
+            <value value="DEFNW19415004055" />
           </Key>
         </deviceKey>
       </Target>
     </runningDeviceTargetSelectedWithDropDown>
-    <timeTargetWasSelectedWithDropDown value="2023-08-16T09:27:34.574256Z" />
+    <timeTargetWasSelectedWithDropDown value="2023-08-16T09:40:03.591093900Z" />
   </component>
 </project>

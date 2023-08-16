@@ -218,10 +218,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             actionMode?.title = "${viewModel.numOfSelectedItems} selected"
         }
     }
-
+    @SuppressLint("NotifyDataSetChanged")
     private fun startActionMode() {
         // hiding more option button from all items
-
+        adapter.isInActionMode = true
+        adapter.notifyDataSetChanged()
         val actionModeCallBack = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
                 menuInflater.inflate(R.menu.locked_files_context_menu, menu)
@@ -232,7 +233,6 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 return true
             }
 
-            @SuppressLint("NotifyDataSetChanged")
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                 if (item != null) {
                     if (item.title == "Delete") {
@@ -241,12 +241,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                         if (viewModel.numOfSelectedItems == adapter.lockedFilesList.size) {
                             adapter.checkedItems.fill(false)
                             viewModel.numOfSelectedItems = 0
-                            adapter.notifyDataSetChanged()
                         } else {
                             adapter.checkedItems.fill(true)
                             viewModel.numOfSelectedItems = adapter.lockedFilesList.size
-                            adapter.notifyDataSetChanged()
                         }
+                        adapter.notifyDataSetChanged()
                         actionMode?.title = "${viewModel.numOfSelectedItems} selected"
                     }
                 }
@@ -256,6 +255,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             @SuppressLint("NotifyDataSetChanged")
             override fun onDestroyActionMode(mode: ActionMode?) {
                 adapter.checkedItems.fill(false)
+                adapter.isInActionMode = false
                 adapter.notifyDataSetChanged()
                 actionMode = null
                 bindings.floatingBtnFilesActivity.visibility = View.VISIBLE
