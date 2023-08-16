@@ -93,7 +93,7 @@ class LockedFileViewAdapter (
         setFileIcon(holder.imageView.context, holder.imageView, File(lockedFilesList[position].path), lockedFilesList[position].extension)
     }
 
-    fun setTimeOnItem(holder : LockedFileViewHolder, position: Int) {
+    private fun setTimeOnItem(holder : LockedFileViewHolder, position: Int) {
         val file = lockedFilesList[position]
         file.calculateRemainingTime(dateNow)
         if (file.remainingTime == "unlocked") {

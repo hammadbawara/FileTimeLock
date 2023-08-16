@@ -121,6 +121,9 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         CoroutineScope(Dispatchers.Main).launch {
             // observer on locked files
             lockedFiles.observe(this@FilesActivity) {
+                if (!bindings.progressBarFilesActivity.isVisible) {
+                    bindings.progressBarFilesActivity.visibility = View.VISIBLE
+                }
                 if (it.size == 0) {
                     bindings.emptyLockedFiles.visibility = View.VISIBLE
                 }else{
@@ -128,8 +131,8 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 }
                 adapter = LockedFileViewAdapter(this@FilesActivity, it, this@FilesActivity, viewModel.timeNow!!)
                 bindings.lockedFilesRecyclerview.adapter = adapter
+                bindings.progressBarFilesActivity.visibility = View.GONE
             }
-            bindings.progressBarFilesActivity.visibility = View.GONE
         }.join()
 
     }
@@ -262,7 +265,6 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
         actionMode = startSupportActionMode(actionModeCallBack as ActionMode.Callback)
         bindings.floatingBtnFilesActivity.visibility = View.INVISIBLE
-
     }
 
     fun shareAllSelectedFiles() {
@@ -332,28 +334,24 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     override fun onGetTime(dateTime: LocalDateTime) {
         viewModel.timeNow = dateTime
         bindings.timeViewActivityFiles.text = dateTime.format(dateTimeFormatter)
-        try{
-            updateTimeOnAllItems()
-        } catch (_: Exception) {
 
-        }
 
         CoroutineScope(Dispatchers.IO).launch {
-            (dateTime.toEpochSecond(ZonedDateTime.now().offset))
+            try{
+                updateTimeOnAllItems()
+            }catch (e: Exception) {
+                println("Exception on updateTime ${e.toString()}")
+            }
+
+            storeTimeInSharedPrefs(dateTime.toEpochSecond(ZonedDateTime.now().offset))
         }
     }
 
     private fun updateTimeOnAllItems() {
         adapter.updateTimeNow(viewModel.timeNow!!)
-        for (i in 0 .. adapter.lockedFilesList.size) {
-            val lockedFile = adapter.lockedFilesList[i]
-            if (!lockedFile.isUnlocked) {
-                val viewHolder =  bindings.lockedFilesRecyclerview.findViewHolderForAdapterPosition(i)
-                        as LockedFileViewAdapter.LockedFileViewHolder
-                lockedFile.calculateRemainingTime(viewModel.timeNow!!)
-                if (lockedFile.remainingTime != viewHolder.remainingTime.text) {
-                    adapter.notifyItemChanged(i)
-                }
+        for (i in 0 until adapter.itemCount){
+            if (!adapter.lockedFilesList[i].isUnlocked) {
+                adapter.notifyItemChanged(i)
             }
         }
     }
