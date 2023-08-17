@@ -14,6 +14,7 @@ import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.setFileIcon
 import java.io.File
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
 
@@ -31,15 +32,15 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         setValues()
 
         bindings.okLockFile.setOnClickListener {
-            val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.getUnlockTime(), this) }
+            val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.unlockDateTime, this) }
             lockFileDialog?.show(supportFragmentManager, "copyFile")
         }
     }
 
     // Set date and time in the TextView based on the ViewModel's date and time
     private fun setDateTimeInTextView() {
-        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.getUnlockTime())
-        bindings.dateLockFile.text = getDateInFormat(viewModel.getUnlockTime())
+        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.unlockDateTime)
+        bindings.dateLockFile.text = getDateInFormat(viewModel.unlockDateTime)
     }
 
     // Set file information and date-time listeners
@@ -62,31 +63,32 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         bindings.dateLockFile.setOnClickListener {
             val datePickerBuilder = datePicker.build()
             datePickerBuilder.addOnPositiveButtonClickListener {
-                val dateTime = viewModel.getUnlockTime()
-                val selection = datePickerBuilder.selection
-
-                // TODO: Implement date lock file picker based on 'selection'
+                val date = LocalDateTime.ofEpochSecond(it / 1000, 0, ZoneOffset.UTC)
+                viewModel.unlockDateTime = LocalDateTime.of(
+                    date.year,
+                    date.month,
+                    date.dayOfMonth,
+                    viewModel.unlockDateTime.hour,
+                    viewModel.unlockDateTime.minute)
+                setDateTimeInTextView()
             }
             datePickerBuilder.show(supportFragmentManager, "DATE_PICKER")
         }
 
         // Time picker click listener
         bindings.timeLockFile.setOnClickListener {
-            timePicker.setHour(viewModel.getUnlockTime().hour)
-            timePicker.setMinute(viewModel.getUnlockTime().minute)
+            timePicker.setHour(viewModel.unlockDateTime.hour)
+            timePicker.setMinute(viewModel.unlockDateTime.minute)
 
             val timePickerBuilder = timePicker.build()
 
             timePickerBuilder.addOnPositiveButtonClickListener {
-                val dateTime = viewModel.getUnlockTime()
-                viewModel.setDateTime(
-                    LocalDateTime.of(
-                        dateTime.year,
-                        dateTime.monthValue,
-                        dateTime.dayOfMonth,
-                        timePickerBuilder.hour,
-                        timePickerBuilder.minute
-                    )
+                viewModel.unlockDateTime = LocalDateTime.of(
+                    viewModel.unlockDateTime.year,
+                    viewModel.unlockDateTime.month,
+                    viewModel.unlockDateTime.dayOfMonth,
+                    timePickerBuilder.hour,
+                    timePickerBuilder.minute
                 )
                 setDateTimeInTextView()
             }
