@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,7 +20,7 @@ import java.io.File
 class FileViewFragment : Fragment(), MyFileViewRecyclerViewAdapter.OnFileViewInteractionListener{
 
     private var columnCount = 1
-
+    private val viewModel by lazy { ViewModelProvider(requireActivity())[FilePickerViewModel::class.java] }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,8 +37,9 @@ class FileViewFragment : Fragment(), MyFileViewRecyclerViewAdapter.OnFileViewInt
         var path = arguments?.getString("path")
 
         if (path == null) {
-            path = "/storage/emulated/0/"
+            path = "/storage/emulated/0"
         }
+        viewModel.path = path
 
         // Set the adapter
         if (view is RecyclerView) {
@@ -95,10 +97,12 @@ class FileViewFragment : Fragment(), MyFileViewRecyclerViewAdapter.OnFileViewInt
                 .addToBackStack(null)
                 .commit()
         }else{
-            val intent = Intent(activity, LockFileActivity::class.java)
-            intent.putExtra("file_path", file.absolutePath)
-            startActivity(intent)
-            activity?.finish()
+            if(!viewModel.isLaunchedAsFileTransfer) {
+                val intent = Intent(activity, LockFileActivity::class.java)
+                intent.putExtra("file_path", file.absolutePath)
+                startActivity(intent)
+                activity?.finish()
+            }
         }
     }
 }

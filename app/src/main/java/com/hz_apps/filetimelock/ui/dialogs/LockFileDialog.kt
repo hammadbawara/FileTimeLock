@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -97,7 +96,6 @@ class LockFileDialog(
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT).show()
         super.onDismiss(dialog)
     }
 
