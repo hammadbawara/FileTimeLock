@@ -3,16 +3,10 @@ package com.hz_apps.filetimelock.ui.dialogs
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.hz_apps.filetimelock.database.AppDB
-import com.hz_apps.filetimelock.database.DBRepository
-import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.DialogCopyFileBinding
-import com.hz_apps.filetimelock.utils.createFolder
-import com.hz_apps.filetimelock.utils.getFileExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,18 +15,9 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.time.LocalDateTime
 
-class LockFileDialog(
-    private val lockFile : File,
-    private val unlockTime : LocalDateTime,
-    private val onFileLockedDialogListener: OnFileLockedDialogListener
-) : DialogFragment() {
+class FileCopyDialog(private val listeners : OnFileCopyListeners) : DialogFragment() {
     private lateinit var bindings : DialogCopyFileBinding
-    private lateinit var db : AppDB
-    private lateinit var repository : DBRepository
-    private lateinit var destination : File
-    private var id : Int = 0
     private lateinit var mainDialog : Dialog
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         bindings = DialogCopyFileBinding.inflate(layoutInflater)
@@ -45,54 +30,25 @@ class LockFileDialog(
 
         dialog.setCancelable(false)
 
-        // Preparing database
-        db = AppDB.getInstance(requireContext())
-        repository = DBRepository(db.lockFileDao())
-
         lifecycleScope.launch(Dispatchers.IO) {
-            copyAndSaveIntoDB()
+            val sourcePath = arguments?.getString("source")
+            val destinationPath = arguments?.getString("destination")
+
+            if (sourcePath == null || destinationPath == null) {
+                throw Exception("Source and destination arguments should not be null")
+            }
+            copyFile(File(sourcePath), File(destinationPath))
+            listeners.onFileCopied()
         }
 
         mainDialog = dialog.create()
         return mainDialog
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
 
-    private suspend fun copyAndSaveIntoDB() {
-        createDestinationFilePath()
-        copyFile(lockFile, destination)
-        lockFile()
-        onFileLockedDialogListener.onFileLocked()
-    }
-
-    private suspend fun createDestinationFilePath() {
-        id = try { repository.getLastId() + 1 }
-        catch (e: Exception) {0}
-        createFolder(requireContext(), "data")
-        destination = File("data/data/${requireContext().packageName}/data/$id")
-    }
-
-    private suspend fun lockFile() {
-        val file = LockFile(
-            id,
-            lockFile.name,
-            LocalDateTime.now(),
-            unlockTime,
-            destination.absolutePath,
-            lockFile.length(),
-            getFileExtension(lockFile),
-            false,
-        )
-
-        repository.insertLockFile(file)
-    }
-
-    interface OnFileLockedDialogListener {
-        fun onFileLocked()
-        fun onFileLockedError()
+    interface OnFileCopyListeners {
+        fun onFileCopied()
+        fun onFileCopyError()
     }
 
     override fun onDismiss(dialog: DialogInterface) {

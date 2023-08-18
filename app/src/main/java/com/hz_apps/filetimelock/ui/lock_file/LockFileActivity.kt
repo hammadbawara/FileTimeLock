@@ -6,20 +6,32 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import com.hz_apps.filetimelock.database.AppDB
+import com.hz_apps.filetimelock.database.DBRepository
+import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityLockFileBinding
-import com.hz_apps.filetimelock.ui.dialogs.LockFileDialog
+import com.hz_apps.filetimelock.ui.dialogs.FileCopyDialog
+import com.hz_apps.filetimelock.utils.createFolder
 import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getFileExtension
 import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.setFileIcon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogListener {
+class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners {
 
     private val viewModel: LockFileViewModel by viewModels()
     private lateinit var bindings: ActivityLockFileBinding
+    private val appDB : AppDB by lazy { AppDB.getInstance(this) }
+    private val repository : DBRepository by lazy { DBRepository(appDB.lockFileDao())}
+    private var id = 0
+    private lateinit var destination : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +44,40 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         setValues()
 
         bindings.okLockFile.setOnClickListener {
-            val lockFileDialog = viewModel.lockFile?.let { LockFileDialog(it, viewModel.unlockDateTime, this) }
-            lockFileDialog?.show(supportFragmentManager, "copyFile")
+            createDestinationFilePath()
+            val fileCopyDialog = FileCopyDialog(this)
+            fileCopyDialog.arguments = Bundle().apply {
+                putString("source", viewModel.lockFile.path)
+                putString("destination", destination)
+            }
+            fileCopyDialog.show(supportFragmentManager, "copyFile")
         }
+    }
+
+    private fun createDestinationFilePath() {
+        runBlocking {
+            CoroutineScope(Dispatchers.IO).launch {
+                id = try { repository.getLastId() + 1 }
+                catch (e: Exception) {0}
+                createFolder(this@LockFileActivity, "data")
+                destination = "data/data/${this@LockFileActivity.packageName}/data/$id"
+            }.join()
+        }
+    }
+
+    private suspend fun insertFileIntoDB() {
+        val file = LockFile(
+            id,
+            viewModel.lockFile.name,
+            LocalDateTime.now(),
+            viewModel.unlockDateTime,
+            destination,
+            viewModel.lockFile.length(),
+            getFileExtension(viewModel.lockFile),
+            false,
+        )
+
+        repository.insertLockFile(file)
     }
 
     // Set date and time in the TextView based on the ViewModel's date and time
@@ -46,7 +89,7 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
     // Set file information and date-time listeners
     private fun setValues() {
         val fileView = bindings.fileViewLockFile
-        val lockFile = viewModel.lockFile!!
+        val lockFile = viewModel.lockFile
         fileView.nameFileView.text = lockFile.name
         setFileIcon(this, fileView.iconFileView, lockFile, getFileExtension(lockFile))
 
@@ -102,11 +145,16 @@ class LockFileActivity : AppCompatActivity(), LockFileDialog.OnFileLockedDialogL
         return super.onSupportNavigateUp()
     }
 
-    override fun onFileLocked() {
+    override fun onFileCopied() {
+        runBlocking {
+            CoroutineScope(Dispatchers.IO).launch {
+                insertFileIntoDB()
+            }.join()
+        }
         finish()
     }
 
-    override fun onFileLockedError() {
+    override fun onFileCopyError() {
         TODO("Not yet implemented")
     }
 }

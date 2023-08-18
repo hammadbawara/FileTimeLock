@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 class LockFileViewModel: ViewModel() {
 
-    var lockFile: File? = null
+    lateinit var lockFile: File
     var unlockDateTime = LocalDateTime.now()
 
 }

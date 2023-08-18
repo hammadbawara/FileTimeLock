@@ -112,6 +112,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     }
 
     private suspend fun getItemFromDBAndSetInRV() {
+        println("MY LOG: in getItemFromDBAndSetInRV")
         CoroutineScope(Dispatchers.Main).launch{
             bindings.progressBarFilesActivity.visibility = View.VISIBLE
         }.join()
@@ -132,6 +133,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 adapter = LockedFileViewAdapter(this@FilesActivity, it, this@FilesActivity, viewModel.timeNow!!)
                 bindings.lockedFilesRecyclerview.adapter = adapter
                 bindings.progressBarFilesActivity.visibility = View.GONE
+                println("MY LOG: in observe ran")
             }
         }.join()
 
@@ -192,6 +194,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 "Move" -> {
                     val intent = Intent(this, FilePickerActivity::class.java)
                     intent.putExtra("IS_LAUNCHED_AS_FILE_TRANSFER" , true)
+                    intent.putExtra("source", lockFile.path)
                     startActivity(intent)
                 }
             }

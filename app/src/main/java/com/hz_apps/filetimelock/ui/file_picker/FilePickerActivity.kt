@@ -2,10 +2,11 @@ package com.hz_apps.filetimelock.ui.file_picker
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.hz_apps.filetimelock.databinding.ActivityFilePickerBinding
+import com.hz_apps.filetimelock.ui.dialogs.FileCopyDialog
+import java.io.File
 
 class FilePickerActivity : AppCompatActivity() {
     private val bindings : ActivityFilePickerBinding by lazy {
@@ -25,9 +26,36 @@ class FilePickerActivity : AppCompatActivity() {
         if (viewModel.isLaunchedAsFileTransfer) {
             bindings.moveFilePicker.visibility = View.VISIBLE
             bindings.moveFilePicker.setOnClickListener {
-                Toast.makeText(this, viewModel.path, Toast.LENGTH_SHORT).show()
+                transferFile()
             }
         }
 
+    }
+
+    private fun transferFile() {
+        val source = intent.getStringExtra("source")
+        val destination = intent.getStringExtra("destination")
+
+        if (source == null ) {
+            throw NullPointerException("source should not be null")
+        }
+
+        val listener = object : FileCopyDialog.OnFileCopyListeners {
+            override fun onFileCopied() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onFileCopyError() {
+                TODO("Not yet implemented")
+            }
+
+        }
+
+        val dialog = FileCopyDialog(listener)
+        dialog.arguments = Bundle().apply {
+            putString("source", source)
+            putString("destination", "${viewModel.path}/${File(source).name}")
+        }
+        dialog.show(supportFragmentManager, "copyFile")
     }
 }
