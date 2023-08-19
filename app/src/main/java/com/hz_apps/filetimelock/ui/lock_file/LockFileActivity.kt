@@ -2,6 +2,7 @@ package com.hz_apps.filetimelock.ui.lock_file
 
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -48,14 +49,33 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
         setValues()
 
         bindings.okLockFile.setOnClickListener {
-            createDestinationFilePath()
-            val fileCopyDialog = FileCopyDialog(this)
-            fileCopyDialog.arguments = Bundle().apply {
-                putString("source", viewModel.lockFile.path)
-                putString("destination", destination)
-            }
-            fileCopyDialog.show(supportFragmentManager, "copyFile")
+            askBeforeLock()
         }
+    }
+
+    private fun askBeforeLock() {
+        val builder = MaterialAlertDialogBuilder(this)
+        builder.setTitle("Lock File")
+        builder.setMessage("Are you sure you want to LOCK this file?\n\nIf you lock this file, you will not be able to access it until the UNLOCK TIME.")
+        builder.setPositiveButton("Yes") { dialog, which ->
+            okLockFile()
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        exitDialog = builder.create()
+        exitDialog?.show()
+    }
+
+    private fun okLockFile() {
+        createDestinationFilePath()
+        val fileCopyDialog = FileCopyDialog(this)
+        fileCopyDialog.arguments = Bundle().apply {
+            putString("source", viewModel.lockFile.path)
+            putString("destination", destination)
+        }
+        fileCopyDialog.show(supportFragmentManager, "copyFile")
     }
 
     private fun createDestinationFilePath() {
@@ -145,25 +165,34 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
     }
 
     override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
+    }
+
+    override fun onBackPressed() {
         if (exitDialog == null) {
             val dialogBuilder = MaterialAlertDialogBuilder(this)
-            dialogBuilder.setMessage("Do you really want to go back? If you go back file will not be locked.")
+            dialogBuilder.setMessage("Do you really want to go back?\nIf you go back file will not be locked.")
             dialogBuilder.setNegativeButton("No"
             ) { dialog, which ->
 
             }
             dialogBuilder.setPositiveButton("Yes") {
                 dialog, which ->
-                onBackPressed()
+                super.onBackPressed()
             }
             exitDialog = dialogBuilder.create()
         }
         exitDialog?.show()
-        return super.onSupportNavigateUp()
     }
 
     override fun onFileCopied() {
         runBlocking {
+            if (viewModel.lockFile.exists()) {
+                if (!viewModel.lockFile.delete()) {
+                    Toast.makeText(this@LockFileActivity, "File could not be deleted", Toast.LENGTH_SHORT).show()
+                }
+            }
             CoroutineScope(Dispatchers.IO).launch {
                 insertFileIntoDB()
             }.join()

@@ -25,6 +25,7 @@ import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
+import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.dialogs.FileTransferDialog
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
@@ -201,7 +202,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 }
 
                 "Move" -> {
-                    moveFile(lockFile.path)
+                    moveFile(lockFile)
                 }
             }
             true
@@ -209,11 +210,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         popupMenu.show()
     }
 
-    private fun moveFile (path : String) {
+    private fun moveFile (lockFile : LockFile) {
         if (isStoragePermissionGranted(this)){
             val fileTransferDialog = FileTransferDialog()
             fileTransferDialog.arguments = Bundle().apply {
-                putString("source", path)
+                putSerializable("LOCK_FILE", lockFile)
             }
             fileTransferDialog.show(supportFragmentManager, "FILE_TRANSFER_DIALOG")
         }else{

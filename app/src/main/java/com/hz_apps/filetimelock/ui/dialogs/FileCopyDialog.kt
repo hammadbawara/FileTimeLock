@@ -2,6 +2,7 @@ package com.hz_apps.filetimelock.ui.dialogs
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +21,8 @@ class FileCopyDialog(private val listeners : OnFileCopyListeners) : DialogFragme
     private lateinit var bindings : DialogCopyFileBinding
     private lateinit var mainDialog : Dialog
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        requireActivity().window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         bindings = DialogCopyFileBinding.inflate(layoutInflater)
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -52,6 +55,8 @@ class FileCopyDialog(private val listeners : OnFileCopyListeners) : DialogFragme
     }
 
     override fun onDismiss(dialog: DialogInterface) {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        requireActivity().window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onDismiss(dialog)
     }
 
@@ -86,11 +91,14 @@ class FileCopyDialog(private val listeners : OnFileCopyListeners) : DialogFragme
 
             // Calculate progress and update progress bar in the main thread
             val progress = (totalBytesRead * 100 / fileSize).toInt()
+            Thread.sleep(10000)
             CoroutineScope(Dispatchers.Main).launch {
                 bindings.copyFileProgressBar.progress = progress
                 bindings.percentageCopyFileDialog.text = "$progress%"
             }
         }
+
+        outputStream.flush()
 
         inputStream.close()
         outputStream.close()
