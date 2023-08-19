@@ -66,6 +66,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
         supportActionBar?.title = "Locked Files"
+        supportActionBar?.elevation = 0f
         setContentView(bindings.root)
 
         setAppTheme()
