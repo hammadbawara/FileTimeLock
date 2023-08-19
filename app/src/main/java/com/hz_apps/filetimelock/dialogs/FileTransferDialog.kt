@@ -28,6 +28,7 @@ class FileTransferDialog: DialogFragment() {
     private val bindings : DialogCopyFileBinding by lazy {
         DialogCopyFileBinding.inflate(layoutInflater)
     }
+    private var timeLockFolder : File? = null
     private lateinit var mainDialog : Dialog
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = MaterialAlertDialogBuilder(requireContext())
@@ -39,27 +40,32 @@ class FileTransferDialog: DialogFragment() {
             dismiss()
         }
 
-        val source = arguments?.getString("source")
-
-        if (source == null) {
-            throw Exception("Source or destination is null.")
-        }
+        val source = arguments?.getString("source") ?: throw Exception("Source or destination is null.")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             CoroutineScope(Dispatchers.IO).launch {
                 transferFile(File(source), requireContext().contentResolver)
-                dialog?.dismiss()
+                dismissDialog()
             }
         }
         else {
             CoroutineScope(Dispatchers.IO).launch {
                 transferFileBelowAndroid10(File(source), requireContext().contentResolver)
-                dialog?.dismiss()
+                dismissDialog()
             }
         }
 
         mainDialog = builder.create()
         return mainDialog
+    }
+
+    private fun dismissDialog() {
+        CoroutineScope(Dispatchers.Main).launch {
+            if (timeLockFolder != null) {
+                Toast.makeText(requireActivity(), "File moved to ${timeLockFolder!!.path}", Toast.LENGTH_LONG).show()
+            }
+            mainDialog.dismiss()
+        }
     }
 
     private fun onCopyError(message: String) {
@@ -69,35 +75,27 @@ class FileTransferDialog: DialogFragment() {
         }
     }
 
-    private fun checkSourceAndDirectory(source: File) : File{
+    private fun checkSourceAndDirectory(source: File){
         if (!source.exists()) {
             onCopyError("Source File doesn't exists")
         }
         val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val timeLockFolder = File(downloadDir, "File Time Lock")
-        if (!timeLockFolder.exists()) {
-            timeLockFolder.mkdirs()
-            if (!timeLockFolder.mkdirs()) {
+        timeLockFolder = File(downloadDir, "File Time Lock")
+        if (!timeLockFolder!!.exists()) {
+            timeLockFolder!!.mkdirs()
+            if (!timeLockFolder!!.mkdirs()) {
                 onCopyError("Unable to make directory")
             }
 
         }
-
-        return timeLockFolder
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private suspend fun transferFile(source: File, contentResolver: ContentResolver) {
 
-        val timeLockFolder = checkSourceAndDirectory(source)
+        checkSourceAndDirectory(source)
 
-        val destinationFileName = source.name
-
-        val existingFile = File(timeLockFolder, source.name)
-        if (existingFile.exists()) {
-            val newName = findUniqueFileName(timeLockFolder, destinationFileName)
-            existingFile.renameTo(File(timeLockFolder, newName))
-        }
+        val destinationFileName = findUniqueFileName(source)
 
         val contentValues = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, destinationFileName)
@@ -134,31 +132,23 @@ class FileTransferDialog: DialogFragment() {
         }
     }
 
-    private fun findUniqueFileName(directory: File, baseName: String): String {
-        var newName = baseName
+    private fun findUniqueFileName(file : File): String {
+        var newFile = file
         var counter = 1
-        val extension = MimeTypeMap.getFileExtensionFromUrl(baseName)
 
-        while (File(directory, newName).exists()) {
-            newName = "${baseName}_${counter++}.$extension"
+        while (newFile.exists()) {
+            newFile = File("${file.nameWithoutExtension}(${counter++}).${file.extension}")
         }
 
-        return newName
+        return newFile.name
     }
 
     private suspend fun transferFileBelowAndroid10(source: File, contentResolver: ContentResolver) {
 
-        val timeLockFolder = checkSourceAndDirectory(source)
+        checkSourceAndDirectory(source)
 
         // Determine the destination file's name
-        val destinationFileName = source.name
-
-        // Handle cases where a file with the same name already exists
-        val existingFile = File(timeLockFolder, source.name)
-        if (existingFile.exists()) {
-            val newName = findUniqueFileName(timeLockFolder, destinationFileName)
-            existingFile.renameTo(File(timeLockFolder, newName))
-        }
+        val destinationFileName = findUniqueFileName(source)
 
         // Create and write to the new destination file
         val newFile = File(timeLockFolder, destinationFileName)
@@ -187,6 +177,7 @@ class FileTransferDialog: DialogFragment() {
 
         }
         catch (e : Exception) {
+            e.printStackTrace()
             onCopyError("Something went wrong")
         }
         finally {
