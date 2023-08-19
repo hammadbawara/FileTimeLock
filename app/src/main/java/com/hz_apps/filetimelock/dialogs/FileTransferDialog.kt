@@ -40,9 +40,8 @@ class FileTransferDialog: DialogFragment() {
         }
 
         val source = arguments?.getString("source")
-        val destination = arguments?.getString("destination")
 
-        if (source == null || destination == null) {
+        if (source == null) {
             throw Exception("Source or destination is null.")
         }
 

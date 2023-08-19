@@ -2,22 +2,20 @@ package com.hz_apps.filetimelock.ui.files
 
 import DateAPIClient
 import OnTimeAPIListener
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
 import androidx.preference.PreferenceManager
@@ -34,6 +32,7 @@ import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
+import com.hz_apps.filetimelock.utils.isStoragePermissionGranted
 import com.hz_apps.filetimelock.utils.openLockFile
 import com.hz_apps.filetimelock.utils.shareFile
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +55,12 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private val dateGetAPI by lazy { DateAPIClient(this, this) }
     private var dateGetJob : Job? = null
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   hh:mm a")
+    private val resultPermissionActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val intent = Intent(this, FilePickerActivity::class.java)
+            startActivity(intent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,15 +76,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
         // floating action button
         bindings.floatingBtnFilesActivity.setOnClickListener {
-            if(ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(this, FilePickerActivity::class.java)
+            val intent = Intent(this, FilePickerActivity::class.java)
+            if(isStoragePermissionGranted(this)) {
                 startActivity(intent)
             }else{
-                val intent = Intent(this, PermissionsActivity::class.java)
-                startActivity(intent)
+                launchPermissionActivity()
             }
         }
 
@@ -111,6 +112,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 checkTime()
             }.join()
         }
+    }
+
+    private fun launchPermissionActivity() {
+        val intent = Intent(this, PermissionsActivity::class.java)
+        resultPermissionActivity.launch(intent)
     }
 
     private suspend fun getItemFromDBAndSetInRV() {
@@ -194,24 +200,26 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 }
 
                 "Move" -> {
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val fileTransferDialog = FileTransferDialog()
-                        fileTransferDialog.arguments = Bundle().apply {
-                            putString("source", lockFile.path)
-                            putString("destination", lockFile.path)
-                        }
-                        fileTransferDialog.show(supportFragmentManager, "FILE_TRANSFER_DIALOG")
-//                    }else {
-//                        val intent = Intent(this, FilePickerActivity::class.java)
-//                        intent.putExtra("IS_LAUNCHED_AS_FILE_TRANSFER" , true)
-//                        intent.putExtra("source", lockFile.path)
-//                        startActivity(intent)
-//                    }
+                    moveFile(lockFile.path)
                 }
             }
             true
         }
         popupMenu.show()
+    }
+
+    private fun moveFile (path : String) {
+        if (isStoragePermissionGranted(this)){
+            val fileTransferDialog = FileTransferDialog()
+            fileTransferDialog.arguments = Bundle().apply {
+                putString("source", path)
+            }
+            fileTransferDialog.show(supportFragmentManager, "FILE_TRANSFER_DIALOG")
+        }else{
+            val intent = Intent(this, PermissionsActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     private fun showLockFileInfo(position: Int) {

@@ -8,7 +8,7 @@ import com.hz_apps.filetimelock.databinding.ActivityPermissionsBinding
 
 class PermissionsActivity : AppCompatActivity() {
 
-    val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
+    private val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
                         android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +26,7 @@ class PermissionsActivity : AppCompatActivity() {
                 }
             }
             if (allPermissionsGranted) {
+                setResult(RESULT_OK)
                 finish()
             }else{
                 Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show()
