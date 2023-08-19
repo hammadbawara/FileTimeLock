@@ -28,6 +28,7 @@ import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
+import com.hz_apps.filetimelock.dialogs.FileTransferDialog
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
@@ -59,6 +60,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
+        supportActionBar?.title = "Locked Files"
         setContentView(bindings.root)
 
         setAppTheme()
@@ -192,10 +194,19 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 }
 
                 "Move" -> {
-                    val intent = Intent(this, FilePickerActivity::class.java)
-                    intent.putExtra("IS_LAUNCHED_AS_FILE_TRANSFER" , true)
-                    intent.putExtra("source", lockFile.path)
-                    startActivity(intent)
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        val fileTransferDialog = FileTransferDialog()
+                        fileTransferDialog.arguments = Bundle().apply {
+                            putString("source", lockFile.path)
+                            putString("destination", lockFile.path)
+                        }
+                        fileTransferDialog.show(supportFragmentManager, "FILE_TRANSFER_DIALOG")
+//                    }else {
+//                        val intent = Intent(this, FilePickerActivity::class.java)
+//                        intent.putExtra("IS_LAUNCHED_AS_FILE_TRANSFER" , true)
+//                        intent.putExtra("source", lockFile.path)
+//                        startActivity(intent)
+//                    }
                 }
             }
             true
@@ -207,6 +218,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         val fileViewDialog = LockFileViewDialog()
         fileViewDialog.arguments = Bundle().apply {
             putSerializable("LOCK_FILE", adapter.lockedFilesList[position])
+            putSerializable("TIME_NOW", viewModel.timeNow!!)
         }
         fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
     }

@@ -38,6 +38,7 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
         bindings = ActivityLockFileBinding.inflate(layoutInflater)
         setContentView(bindings.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Select Unlock Time"
 
         // Check if the selected file is already available or launch the file picker
         viewModel.lockFile = File(intent.getStringExtra("file_path")!!)

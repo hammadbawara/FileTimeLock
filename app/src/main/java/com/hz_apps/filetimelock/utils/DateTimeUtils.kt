@@ -25,7 +25,7 @@ fun getDateInFormat(dateTime: LocalDateTime): String {
     return dateTime.format(formatter)
 }
 
-fun calculateTimeDifference(end: LocalDateTime,start: LocalDateTime,): String {
+fun calculateTimeDifference(end: LocalDateTime, start: LocalDateTime,): String {
     if (start >= end) {
         return "unlocked"
     }
@@ -35,10 +35,47 @@ fun calculateTimeDifference(end: LocalDateTime,start: LocalDateTime,): String {
     return when {
         duration.toDays() >= 365 -> "${duration.toDays() / 365} yr"
         duration.toDays() >= 30 -> "${duration.toDays() / 30} mo"
-        duration.toDays() >= 7 -> "${duration.toDays() / 7} wk"
         duration.toDays() > 0 -> "${duration.toDays()} day"
         duration.toHours() > 0 -> "${duration.toHours()} hr"
         duration.toMinutes() > 0 -> "${duration.toMinutes()} min"
         else -> ">1 min"
     }
+}
+
+fun calculateTimeDifferenceTillEnd(end: LocalDateTime, start: LocalDateTime): String {
+    if (start >= end) {
+        return "unlocked"
+    }
+
+    val duration = Duration.between(start, end)
+
+    val years = duration.toDays() / 365
+    val months = (duration.toDays() % 365) / 30
+    val days = (duration.toDays() % 30).toInt()
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes()
+    val seconds = duration.seconds % 60
+
+    val timeParts = mutableListOf<String>()
+
+    if (years > 0) {
+        timeParts.add("$years yr")
+    }
+    if (months > 0) {
+        timeParts.add("$months mo")
+    }
+    if (days > 0) {
+        timeParts.add("$days day")
+    }
+    if (hours > 0) {
+        timeParts.add("$hours hr")
+    }
+    if (minutes > 0) {
+        timeParts.add("$minutes min")
+    }
+    if (seconds > 0) {
+        timeParts.add("$seconds sec")
+    }
+
+    return timeParts.joinToString(" ")
 }

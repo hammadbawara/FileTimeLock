@@ -18,6 +18,7 @@ class FilePickerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(bindings.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Select a file"
 
         viewModel = ViewModelProvider(this)[FilePickerViewModel::class.java]
 
@@ -42,7 +43,7 @@ class FilePickerActivity : AppCompatActivity() {
 
         val listener = object : FileCopyDialog.OnFileCopyListeners {
             override fun onFileCopied() {
-                TODO("Not yet implemented")
+                finish()
             }
 
             override fun onFileCopyError() {

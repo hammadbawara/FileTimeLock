@@ -34,7 +34,8 @@
             android:padding="5dp"
             android:textSize="20sp"
             app:layout_constraintEnd_toStartOf="@+id/time_get_btn"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/time_get_btn"
