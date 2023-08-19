@@ -3,6 +3,8 @@ package com.hz_apps.filetimelock.dialogs
 import android.app.Dialog
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.DialogInterface
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +15,9 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.hz_apps.filetimelock.database.AppDB
+import com.hz_apps.filetimelock.database.DBRepository
+import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.DialogCopyFileBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +35,12 @@ class FileTransferDialog: DialogFragment() {
     }
     private var timeLockFolder : File? = null
     private lateinit var mainDialog : Dialog
+
+    private lateinit var  lockFile : LockFile
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = MaterialAlertDialogBuilder(requireContext())
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        requireActivity().window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         builder.setView(bindings.root)
         builder.setCancelable(false)
@@ -40,23 +49,37 @@ class FileTransferDialog: DialogFragment() {
             dismiss()
         }
 
-        val source = arguments?.getString("source") ?: throw Exception("Source or destination is null.")
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            CoroutineScope(Dispatchers.IO).launch {
-                transferFile(File(source), requireContext().contentResolver)
-                dismissDialog()
-            }
+
+        lockFile = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable("LOCK_FILE", LockFile::class.java) ?: throw Exception("Source or destination is null.")
+        } else {
+            arguments?.getSerializable("LOCK_FILE") as LockFile
         }
-        else {
-            CoroutineScope(Dispatchers.IO).launch {
-                transferFileBelowAndroid10(File(source), requireContext().contentResolver)
-                dismissDialog()
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                transferFile(File(lockFile.path), requireContext().contentResolver)
+            }else {
+                transferFileBelowAndroid10(File(lockFile.path), requireContext().contentResolver)
             }
+
+            deleteFileFromDB()
+            dismissDialog()
         }
 
         mainDialog = builder.create()
         return mainDialog
+    }
+
+    private suspend fun deleteFileFromDB() {
+        val appDB = AppDB.getInstance(requireContext().applicationContext)
+        val repository = DBRepository(appDB.lockFileDao())
+        repository.delete(lockFile)
+        if (File(lockFile.path).delete()) {
+            onCopyError("File is copied to ${lockFile.path} but unable to delete from database")
+        }
     }
 
     private fun dismissDialog() {
@@ -66,6 +89,12 @@ class FileTransferDialog: DialogFragment() {
             }
             mainDialog.dismiss()
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        requireActivity().window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        super.onDismiss(dialog)
     }
 
     private fun onCopyError(message: String) {
