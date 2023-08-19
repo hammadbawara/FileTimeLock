@@ -91,6 +91,7 @@ class FileCopyDialog(private val listeners : OnFileCopyListeners) : DialogFragme
 
             // Calculate progress and update progress bar in the main thread
             val progress = (totalBytesRead * 100 / fileSize).toInt()
+            Thread.sleep(10000)
             CoroutineScope(Dispatchers.Main).launch {
                 bindings.copyFileProgressBar.progress = progress
                 bindings.percentageCopyFileDialog.text = "$progress%"
