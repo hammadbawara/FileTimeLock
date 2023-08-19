@@ -41,6 +41,7 @@ fun setFileIcon(context: Context, imageView: ImageView, file: File, extension : 
         Glide.with(context)
             .load(file)
             .placeholder(resource)
+            .centerCrop()
             .into(imageView)
     } else {
         imageView.setImageResource(resource)

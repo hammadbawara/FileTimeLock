@@ -1,9 +1,11 @@
 package com.hz_apps.filetimelock.ui.lock_file
 
+import android.app.Dialog
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.hz_apps.filetimelock.database.AppDB
@@ -32,6 +34,7 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
     private val repository : DBRepository by lazy { DBRepository(appDB.lockFileDao())}
     private var id = 0
     private lateinit var destination : String
+    private var exitDialog : Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,7 +145,20 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        if (exitDialog == null) {
+            val dialogBuilder = MaterialAlertDialogBuilder(this)
+            dialogBuilder.setMessage("Do you really want to go back? If you go back file will not be locked.")
+            dialogBuilder.setNegativeButton("No"
+            ) { dialog, which ->
+
+            }
+            dialogBuilder.setPositiveButton("Yes") {
+                dialog, which ->
+                onBackPressed()
+            }
+            exitDialog = dialogBuilder.create()
+        }
+        exitDialog?.show()
         return super.onSupportNavigateUp()
     }
 

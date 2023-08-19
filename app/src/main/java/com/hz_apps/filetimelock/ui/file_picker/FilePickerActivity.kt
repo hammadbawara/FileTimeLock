@@ -59,4 +59,9 @@ class FilePickerActivity : AppCompatActivity() {
         }
         dialog.show(supportFragmentManager, "copyFile")
     }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
+    }
 }
