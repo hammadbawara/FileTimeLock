@@ -7,11 +7,12 @@
     android:background="?selectableItemBackground"
     android:padding="8dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/icon_file_view"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:outlineProvider="bounds"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
         app:layout_constraintBottom_toBottomOf="@+id/name_file_view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/name_file_view"

@@ -1,4 +1,4 @@
-package com.hz_apps.filetimelock.ui.file_picker
+package com.hz_apps.filetimelock.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

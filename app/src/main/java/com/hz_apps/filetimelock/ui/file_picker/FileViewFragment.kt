@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hz_apps.filetimelock.R
+import com.hz_apps.filetimelock.adapters.MyFileViewRecyclerViewAdapter
 import com.hz_apps.filetimelock.ui.lock_file.LockFileActivity
 import java.io.File
 
