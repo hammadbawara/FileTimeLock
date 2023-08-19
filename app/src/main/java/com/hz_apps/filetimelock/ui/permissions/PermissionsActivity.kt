@@ -1,35 +1,42 @@
 package com.hz_apps.filetimelock.ui.permissions
 
-import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.hz_apps.filetimelock.databinding.ActivityPermissionsBinding
-import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 
 class PermissionsActivity : AppCompatActivity() {
 
+    private val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bindings = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(bindings.root)
         supportActionBar?.hide()
 
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    val intent = Intent(this, FilePickerActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-
+        val requestPermissionLauncher = registerForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) {
+            var allPermissionsGranted = true
+            for (i in it.values) {
+                if (!i) {
+                    allPermissionsGranted = false
                 }
             }
+            if (allPermissionsGranted) {
+                setResult(RESULT_OK)
+                finish()
+            }else{
+                Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         bindings.allowBtnPermission.setOnClickListener{
-            requestPermissionLauncher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+
+            requestPermissionLauncher.launch(permissions)
+
         }
 
         bindings.goBackBtnPermission.setOnClickListener {

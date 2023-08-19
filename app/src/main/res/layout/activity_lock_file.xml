@@ -41,11 +41,18 @@
 
             </include>
 
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Unlock Time"
+                android:textSize="18sp" />
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="3dp">
+                android:layout_marginTop="5dp">
 
                 <ImageView
                     android:id="@+id/imageView2"
@@ -77,8 +84,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:padding="3dp">
+                android:layout_marginTop="8dp">
 
                 <TextView
                     android:id="@+id/time_lock_file"

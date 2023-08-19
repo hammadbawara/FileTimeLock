@@ -9,6 +9,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.net.URLConnection
+import java.text.DecimalFormat
 
 
 fun createFolder(context: Context, folderName: String): Boolean {
@@ -62,4 +63,16 @@ fun shareFile(context: Context, file: File) {
 
     context.startActivity(Intent.createChooser(intent, "Share file"))
 
+}
+
+fun formatFileSize(size: Long): String {
+    if (size <= 0) {
+        return "0 B"
+    }
+
+    val units = arrayOf("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
+
+    val formatter = DecimalFormat("#,##0.#")
+    return "${formatter.format(size / Math.pow(1024.0, digitGroups.toDouble()))} ${units[digitGroups]}"
 }

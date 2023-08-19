@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?selectableItemBackground">
+    android:background="?selectableItemBackground"
+    android:padding="8dp">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/icon_file_view"
@@ -19,13 +20,11 @@
 
     <TextView
         android:id="@+id/name_file_view"
-        style="@style/file_text_view_style"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
+        style="@style/file_text_view_style"
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -15,10 +15,11 @@
         android:paddingTop="20dp"
         android:paddingBottom="20dp">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/item_image_view"
             android:layout_width="70dp"
             android:layout_height="70dp"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
             app:srcCompat="@drawable/ic_folder" />
 
         <TextView

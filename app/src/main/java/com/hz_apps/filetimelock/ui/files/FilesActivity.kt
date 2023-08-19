@@ -2,22 +2,20 @@ package com.hz_apps.filetimelock.ui.files
 
 import DateAPIClient
 import OnTimeAPIListener
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.distinctUntilChanged
 import androidx.preference.PreferenceManager
@@ -27,12 +25,15 @@ import com.hz_apps.filetimelock.adapters.LockFileListeners
 import com.hz_apps.filetimelock.adapters.LockedFileViewAdapter
 import com.hz_apps.filetimelock.database.AppDB
 import com.hz_apps.filetimelock.database.DBRepository
+import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
+import com.hz_apps.filetimelock.dialogs.FileTransferDialog
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
 import com.hz_apps.filetimelock.ui.settings.SettingsActivity
 import com.hz_apps.filetimelock.utils.FileSort
+import com.hz_apps.filetimelock.utils.isStoragePermissionGranted
 import com.hz_apps.filetimelock.utils.openLockFile
 import com.hz_apps.filetimelock.utils.shareFile
 import kotlinx.coroutines.CoroutineScope
@@ -55,10 +56,18 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
     private val dateGetAPI by lazy { DateAPIClient(this, this) }
     private var dateGetJob : Job? = null
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("E, d MMM, yyyy   hh:mm a")
+    private val resultPermissionActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val intent = Intent(this, FilePickerActivity::class.java)
+            startActivity(intent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindings = ActivityFilesBinding.inflate(layoutInflater)
+        supportActionBar?.title = "Locked Files"
+        supportActionBar?.elevation = 0f
         setContentView(bindings.root)
 
         setAppTheme()
@@ -69,15 +78,11 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
 
         // floating action button
         bindings.floatingBtnFilesActivity.setOnClickListener {
-            if(ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(this, FilePickerActivity::class.java)
+            val intent = Intent(this, FilePickerActivity::class.java)
+            if(isStoragePermissionGranted(this)) {
                 startActivity(intent)
             }else{
-                val intent = Intent(this, PermissionsActivity::class.java)
-                startActivity(intent)
+                launchPermissionActivity()
             }
         }
 
@@ -111,7 +116,13 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         }
     }
 
+    private fun launchPermissionActivity() {
+        val intent = Intent(this, PermissionsActivity::class.java)
+        resultPermissionActivity.launch(intent)
+    }
+
     private suspend fun getItemFromDBAndSetInRV() {
+        println("MY LOG: in getItemFromDBAndSetInRV")
         CoroutineScope(Dispatchers.Main).launch{
             bindings.progressBarFilesActivity.visibility = View.VISIBLE
         }.join()
@@ -132,6 +143,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 adapter = LockedFileViewAdapter(this@FilesActivity, it, this@FilesActivity, viewModel.timeNow!!)
                 bindings.lockedFilesRecyclerview.adapter = adapter
                 bindings.progressBarFilesActivity.visibility = View.GONE
+                println("MY LOG: in observe ran")
             }
         }.join()
 
@@ -165,6 +177,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
         if (adapter.lockedFilesList[position].isUnlocked) {
             popupMenu.menu.add("Open")
             popupMenu.menu.add("Share")
+            popupMenu.menu.add("Move")
         }
 
         popupMenu.menu.add("Info")
@@ -187,16 +200,35 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 "Share" -> {
                     shareFile(this, File(lockFile.path))
                 }
+
+                "Move" -> {
+                    moveFile(lockFile)
+                }
             }
             true
         }
         popupMenu.show()
     }
 
+    private fun moveFile (lockFile : LockFile) {
+        if (isStoragePermissionGranted(this)){
+            val fileTransferDialog = FileTransferDialog()
+            fileTransferDialog.arguments = Bundle().apply {
+                putSerializable("LOCK_FILE", lockFile)
+            }
+            fileTransferDialog.show(supportFragmentManager, "FILE_TRANSFER_DIALOG")
+        }else{
+            val intent = Intent(this, PermissionsActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
     private fun showLockFileInfo(position: Int) {
         val fileViewDialog = LockFileViewDialog()
         fileViewDialog.arguments = Bundle().apply {
             putSerializable("LOCK_FILE", adapter.lockedFilesList[position])
+            putSerializable("TIME_NOW", viewModel.timeNow!!)
         }
         fileViewDialog.show(supportFragmentManager, "FILE_VIEW_DIALOG")
     }

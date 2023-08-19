@@ -2,59 +2,66 @@ package com.hz_apps.filetimelock.ui.file_picker
 
 import android.os.Bundle
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.hz_apps.filetimelock.adapters.FileViewAdapter
+import androidx.lifecycle.ViewModelProvider
 import com.hz_apps.filetimelock.databinding.ActivityFilePickerBinding
+import com.hz_apps.filetimelock.ui.dialogs.FileCopyDialog
+import java.io.File
 
 class FilePickerActivity : AppCompatActivity() {
-
-    private lateinit var adapter: FileViewAdapter
-    private val viewModel: FilePickerViewModel by viewModels()
+    private val bindings : ActivityFilePickerBinding by lazy {
+        ActivityFilePickerBinding.inflate(layoutInflater)
+    }
+    private lateinit var  viewModel : FilePickerViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bindings = ActivityFilePickerBinding.inflate(layoutInflater)
         setContentView(bindings.root)
-
-        // back button press enabled
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Select a file"
 
-        supportActionBar?.title = "Internal Storage"
+        viewModel = ViewModelProvider(this)[FilePickerViewModel::class.java]
 
-        bindings.cancelFilePicker.setOnClickListener {
-            super.onBackPressed()
+        viewModel.isLaunchedAsFileTransfer = intent.getBooleanExtra("IS_LAUNCHED_AS_FILE_TRANSFER", false)
+
+        if (viewModel.isLaunchedAsFileTransfer) {
+            bindings.moveFilePicker.visibility = View.VISIBLE
+            bindings.moveFilePicker.setOnClickListener {
+                transferFile()
+            }
         }
-
-        bindings.selectCancelFilePicker.visibility = View.GONE
-
-
-        // ask user for storage permission
-
-        //val files = getFilesAndFolders(path);
-
-
-        adapter = FileViewAdapter(this, viewModel)
-
-
-
-        bindings.recyclerFileView.adapter = adapter
 
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("onSupportNavigateUp()"))
-    override fun onBackPressed() {
-        onSupportNavigateUp()
+    private fun transferFile() {
+        val source = intent.getStringExtra("source")
+        val destination = intent.getStringExtra("destination")
+
+        if (source == null ) {
+            throw NullPointerException("source should not be null")
+        }
+
+        val listener = object : FileCopyDialog.OnFileCopyListeners {
+            override fun onFileCopied() {
+                finish()
+            }
+
+            override fun onFileCopyError() {
+                TODO("Not yet implemented")
+            }
+
+        }
+
+        val dialog = FileCopyDialog(listener)
+        dialog.arguments = Bundle().apply {
+            putString("source", source)
+            putString("destination", "${viewModel.path}/${File(source).name}")
+        }
+        dialog.show(supportFragmentManager, "copyFile")
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        if (adapter.getCurrentPath() == viewModel.path) {
-            super.onBackPressed()
-            return true
-        } else {
-            adapter.onBackPressed()
-        }
-        return false
+        onBackPressed()
+        return super.onSupportNavigateUp()
     }
-
 }
