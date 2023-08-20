@@ -78,9 +78,10 @@ class FileTransferDialog: DialogFragment() {
         val repository = DBRepository(appDB.lockFileDao())
         repository.delete(lockFile)
         if (!File(lockFile.path).delete()) {
-            onCopyError("File is copied to ${timeLockFolder!!.path} but unable to delete from database")
-        }else{
-            Toast.makeText(requireActivity(), "File moved to ${timeLockFolder!!.path}", Toast.LENGTH_LONG).show()
+            onCopyError("Unable to delete file from database")
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            Toast.makeText(requireActivity(), "File moved to \n${timeLockFolder!!.path}", Toast.LENGTH_LONG).show()
         }
     }
 

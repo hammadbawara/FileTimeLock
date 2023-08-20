@@ -8,7 +8,6 @@ import com.hz_apps.filetimelock.database.LockFile
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.net.URLConnection
 import java.text.DecimalFormat
 
 
@@ -51,18 +50,26 @@ fun openLockFile(context: Context, lockFile: LockFile) {
 }
 
 fun shareFile(context: Context, file: File) {
-    val intent = Intent(Intent.ACTION_SEND)
+//    val intent = Intent(Intent.ACTION_SEND)
+//    val contentUri = FileProvider.getUriForFile(context, "com.hz_apps.filetimelock.FileProvider", file)
+//    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//
+//
+//// Determine MIME type using HttpURLConnection
+//    val mimeType = URLConnection.guessContentTypeFromName(file.name)
+//    intent.setDataAndType(contentUri, mimeType)
+//
+//    context.startActivity(Intent.createChooser(intent, "Share file"))
+
     val contentUri = FileProvider.getUriForFile(context, "com.hz_apps.filetimelock.FileProvider", file)
+    val intent = Intent(Intent.ACTION_SEND)
+    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
+    intent.type = mimeType
+    intent.putExtra(Intent.EXTRA_STREAM, contentUri)
+    intent.putExtra(Intent.EXTRA_TITLE, file.name)
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-
-// Determine MIME type using HttpURLConnection
-    val mimeType = URLConnection.guessContentTypeFromName(file.name)
-    intent.setDataAndType(contentUri, mimeType)
-
-    context.startActivity(Intent.createChooser(intent, "Share file"))
-
+    context.startActivity(intent)
 }
 
 fun formatFileSize(size: Long): String {
