@@ -28,6 +28,7 @@ import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityFilesBinding
 import com.hz_apps.filetimelock.dialogs.FileTransferDialog
+import com.hz_apps.filetimelock.ui.About.AboutActivity
 import com.hz_apps.filetimelock.ui.dialogs.LockFileViewDialog
 import com.hz_apps.filetimelock.ui.file_picker.FilePickerActivity
 import com.hz_apps.filetimelock.ui.permissions.PermissionsActivity
@@ -430,7 +431,7 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
                 viewModel.timeNow = LocalDateTime.ofEpochSecond(time, 0, ZonedDateTime.now().offset)
             }
 
-            val sortType = preferences.getString("sort_by", FileSort.DATE_UNLOCK.name)!!
+            val sortType = preferences.getString("sort_by", FileSort.DATE_ADDED.name)!!
             viewModel.sortBy = FileSort.valueOf(sortType)
             viewModel.isAscending = preferences.getBoolean("is_ascending", true)
         }
@@ -485,6 +486,12 @@ class FilesActivity : AppCompatActivity(), LockFileListeners, OnTimeAPIListener{
             R.id.settings_activity_action_menu -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
+            }
+            R.id.about_files_activity_action_menu-> {
+                val intent = Intent(this, AboutActivity::class.java)
+                startActivity(intent)
+            }
+            else -> {
             }
         }
         return super.onOptionsItemSelected(item)

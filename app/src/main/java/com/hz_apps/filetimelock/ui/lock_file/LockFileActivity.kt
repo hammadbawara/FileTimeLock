@@ -202,14 +202,14 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
 
     override fun onFileCopied() {
         runBlocking {
+            CoroutineScope(Dispatchers.IO).launch {
+                insertFileIntoDB()
+            }.join()
             if (viewModel.lockFile.exists()) {
                 if (!viewModel.lockFile.delete()) {
                     toastInMain("Unable to delete this file from internal storage")
                 }
             }
-            CoroutineScope(Dispatchers.IO).launch {
-                insertFileIntoDB()
-            }.join()
         }
         finish()
     }

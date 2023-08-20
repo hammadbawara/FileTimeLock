@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:title="Settings" />
     <item
-        android:id="@+id/about_files_activity"
+        android:id="@+id/about_files_activity_action_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="About" />
