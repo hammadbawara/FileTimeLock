@@ -29,7 +29,7 @@ class LockFileViewDialog(): DialogFragment() {
         bindings.nameLockFileView.text = lockFile.name
         bindings.dateAddedLockFileView.text = lockFile.dateAdded.format(dateFormatter)
         bindings.unlockDateLockFileView.text = lockFile.dateUnlock.format(dateFormatter)
-        bindings.timeRemainingLockFileView.text = calculateTimeDifferenceTillEnd(lockFile.dateUnlock, timeNow)
+
         bindings.sizeLockFileView.text = formatFileSize(lockFile.size)
 
         dialogBuilder.setNegativeButton("Cancel"
@@ -40,6 +40,7 @@ class LockFileViewDialog(): DialogFragment() {
             dialogBuilder.setPositiveButton("Open") { dialog, which ->
                 openLockFile(requireContext(), lockFile)
             }
+            bindings.timeRemainingLockFileView.text = calculateTimeDifferenceTillEnd(lockFile.dateUnlock, timeNow)
             setFileIcon(requireContext(), bindings.iconLockFileView, File(lockFile.path), lockFile.extension)
 
         }else{

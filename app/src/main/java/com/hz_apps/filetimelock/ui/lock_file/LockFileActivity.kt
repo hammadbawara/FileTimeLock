@@ -14,10 +14,9 @@ import com.hz_apps.filetimelock.database.DBRepository
 import com.hz_apps.filetimelock.database.LockFile
 import com.hz_apps.filetimelock.databinding.ActivityLockFileBinding
 import com.hz_apps.filetimelock.ui.dialogs.FileCopyDialog
+import com.hz_apps.filetimelock.utils.calculateTimeDifferenceTillEnd
 import com.hz_apps.filetimelock.utils.createFolder
-import com.hz_apps.filetimelock.utils.getDateInFormat
 import com.hz_apps.filetimelock.utils.getFileExtension
-import com.hz_apps.filetimelock.utils.getTimeIn12HourFormat
 import com.hz_apps.filetimelock.utils.setFileIcon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,8 +105,16 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
 
     // Set date and time in the TextView based on the ViewModel's date and time
     private fun setDateTimeInTextView() {
-        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.unlockDateTime)
-        bindings.dateLockFile.text = getDateInFormat(viewModel.unlockDateTime)
+        val remainingTime =
+            calculateTimeDifferenceTillEnd(viewModel.unlockDateTime, LocalDateTime.now())
+        if (remainingTime == "unlocked") {
+            bindings.remainingTimeLockActivity.text = "Remaining Time : 0"
+        } else {
+            bindings.remainingTimeLockActivity.text = "Remaining Time: ${remainingTime}"
+//        }
+//        bindings.timeLockFile.text = getTimeIn12HourFormat(viewModel.unlockDateTime)
+//        bindings.dateLockFile.text = getDateInFormat(viewModel.unlockDateTime)
+        }
     }
 
     // Set file information and date-time listeners
@@ -172,6 +179,7 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
     override fun onBackPressed() {
         if (exitDialog == null) {
             val dialogBuilder = MaterialAlertDialogBuilder(this)
+            dialogBuilder.setTitle("Want to go back?")
             dialogBuilder.setMessage("Do you really want to go back?\nIf you go back file will not be locked.")
             dialogBuilder.setNegativeButton("No"
             ) { dialog, which ->
@@ -186,11 +194,17 @@ class LockFileActivity : AppCompatActivity(), FileCopyDialog.OnFileCopyListeners
         exitDialog?.show()
     }
 
+    private suspend fun toastInMain(message: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            Toast.makeText(this@LockFileActivity, message, Toast.LENGTH_LONG).show()
+        }.join()
+    }
+
     override fun onFileCopied() {
         runBlocking {
             if (viewModel.lockFile.exists()) {
                 if (!viewModel.lockFile.delete()) {
-                    Toast.makeText(this@LockFileActivity, "File could not be deleted", Toast.LENGTH_SHORT).show()
+                    toastInMain("Unable to delete this file from internal storage")
                 }
             }
             CoroutineScope(Dispatchers.IO).launch {

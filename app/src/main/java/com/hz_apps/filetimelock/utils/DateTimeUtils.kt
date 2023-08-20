@@ -20,7 +20,7 @@ fun getTimeIn12HourFormat(dateTime: LocalDateTime): String {
     return String.format("%02d:%02d %s", hour, minute, amPm)
 }
 
-fun getDateInFormat(dateTime: LocalDateTime): String {
+fun getDateInFormat(dateTime: LocalDateTime): String? {
     val formatter = DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy")
     return dateTime.format(formatter)
 }
@@ -52,8 +52,8 @@ fun calculateTimeDifferenceTillEnd(end: LocalDateTime, start: LocalDateTime): St
     val years = duration.toDays() / 365
     val months = (duration.toDays() % 365) / 30
     val days = (duration.toDays() % 30).toInt()
-    val hours = duration.toHours()
-    val minutes = duration.toMinutes()
+    val hours = (duration.toHours() % 24).toInt()
+    val minutes = duration.toMinutes() % 60
     val seconds = duration.seconds % 60
 
     val timeParts = mutableListOf<String>()

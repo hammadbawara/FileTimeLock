@@ -77,16 +77,15 @@ class FileTransferDialog: DialogFragment() {
         val appDB = AppDB.getInstance(requireContext().applicationContext)
         val repository = DBRepository(appDB.lockFileDao())
         repository.delete(lockFile)
-        if (File(lockFile.path).delete()) {
-            onCopyError("File is copied to ${lockFile.path} but unable to delete from database")
+        if (!File(lockFile.path).delete()) {
+            onCopyError("File is copied to ${timeLockFolder!!.path} but unable to delete from database")
+        }else{
+            Toast.makeText(requireActivity(), "File moved to ${timeLockFolder!!.path}", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun dismissDialog() {
         CoroutineScope(Dispatchers.Main).launch {
-            if (timeLockFolder != null) {
-                Toast.makeText(requireActivity(), "File moved to ${timeLockFolder!!.path}", Toast.LENGTH_LONG).show()
-            }
             mainDialog.dismiss()
         }
     }
@@ -104,7 +103,7 @@ class FileTransferDialog: DialogFragment() {
         }
     }
 
-    private fun checkSourceAndDirectory(source: File){
+    private suspend fun checkSourceAndDirectory(source: File){
         if (!source.exists()) {
             onCopyError("Source File doesn't exists")
         }
@@ -112,7 +111,7 @@ class FileTransferDialog: DialogFragment() {
         timeLockFolder = File(downloadDir, "File Time Lock")
         if (!timeLockFolder!!.exists()) {
             timeLockFolder!!.mkdirs()
-            if (!timeLockFolder!!.mkdirs()) {
+            if (!timeLockFolder!!.exists()) {
                 onCopyError("Unable to make directory")
             }
 
